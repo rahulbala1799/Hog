@@ -66,6 +66,7 @@ function CalendarViewContent({ viewMode }: CalendarViewProps) {
 
   useEffect(() => {
     fetchData()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentDate, viewMode])
 
   const fetchData = async () => {

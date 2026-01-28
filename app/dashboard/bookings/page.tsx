@@ -28,6 +28,7 @@ export default function BookingsPage() {
 
   useEffect(() => {
     fetchBookings()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [filter])
 
   const fetchBookings = async () => {
