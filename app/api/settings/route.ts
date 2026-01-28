@@ -4,6 +4,7 @@ import { requireAdmin } from '@/lib/auth-helpers'
 import { Currency } from '@prisma/client'
 
 export const runtime = 'nodejs'
+export const dynamic = 'force-dynamic'
 
 export async function GET() {
   try {
