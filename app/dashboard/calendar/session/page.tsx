@@ -161,17 +161,20 @@ function SessionDetailContent() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <header className="bg-white border-b border-gray-200 sticky top-0 z-10">
-        <div className="px-4 py-4">
-          <div className="flex items-center gap-3">
+    <div className="min-h-screen bg-gradient-to-br from-purple-50 via-pink-50 to-orange-50">
+      {/* Artistic Header */}
+      <header className="relative overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-r from-purple-600 via-pink-600 to-orange-500"></div>
+        <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxnIGZpbGw9IiNmZmZmZmYiIGZpbGwtb3BhY2l0eT0iMC4xIj48cGF0aCBkPSJNMzYgMzBoLTJ2LTJoMnYyem0tNiAwaDJ2LTJoLTJ2MnoiLz48L2c+PC9nPjwvc3ZnPg==')] opacity-30"></div>
+        
+        <div className="relative px-4 py-5">
+          <div className="flex items-center gap-3 mb-4">
             <button
               onClick={() => router.back()}
-              className="flex items-center justify-center w-10 h-10 rounded-full hover:bg-gray-100 transition-colors"
+              className="flex items-center justify-center w-11 h-11 rounded-xl bg-white/20 backdrop-blur-sm hover:bg-white/30 transition-all border border-white/30"
             >
               <svg
-                className="w-6 h-6 text-gray-700"
+                className="w-6 h-6 text-white"
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
@@ -185,8 +188,30 @@ function SessionDetailContent() {
               </svg>
             </button>
             <div className="flex-1">
-              <h1 className="text-xl font-bold text-gray-900">Session Details</h1>
-              <p className="text-xs text-gray-600">{formatDate(date)}</p>
+              <h1 className="text-2xl font-bold text-white">🌙 {getSessionTitle()}</h1>
+              <p className="text-sm text-white/90 font-medium">{formatDate(date)}</p>
+            </div>
+          </div>
+
+          {/* Session Time & Capacity Stats */}
+          <div className="grid grid-cols-2 gap-3">
+            <div className="bg-white/20 backdrop-blur-md rounded-2xl p-3 border border-white/30">
+              <div className="flex items-center gap-2 mb-1">
+                <svg className="w-4 h-4 text-white/80" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                <span className="text-xs text-white/80 font-medium">Time</span>
+              </div>
+              <div className="text-lg font-bold text-white">{getSessionTime()}</div>
+            </div>
+            <div className="bg-white/20 backdrop-blur-md rounded-2xl p-3 border border-white/30">
+              <div className="flex items-center gap-2 mb-1">
+                <svg className="w-4 h-4 text-white/80" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                </svg>
+                <span className="text-xs text-white/80 font-medium">Capacity</span>
+              </div>
+              <div className="text-lg font-bold text-white">{capacity.booked}/{capacity.maxCapacity}</div>
             </div>
           </div>
         </div>
@@ -195,92 +220,131 @@ function SessionDetailContent() {
       {/* Main Content */}
       <main className="px-4 py-6 pb-24">
         {loading ? (
-          <div className="text-center py-12">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600 mx-auto"></div>
-            <p className="mt-4 text-gray-600">Loading session...</p>
+          <div className="text-center py-16">
+            <div className="relative inline-block">
+              <div className="animate-spin rounded-full h-16 w-16 border-4 border-purple-200 border-t-purple-600"></div>
+              <div className="absolute inset-0 animate-ping rounded-full h-16 w-16 border-4 border-purple-300 opacity-20"></div>
+            </div>
+            <p className="mt-6 text-gray-600 font-medium">Loading session...</p>
           </div>
         ) : error ? (
-          <div className="text-center py-12">
-            <div className="text-4xl mb-4">⚠️</div>
+          <div className="bg-white rounded-3xl p-12 text-center shadow-lg border border-gray-100">
+            <div className="w-20 h-20 bg-red-100 rounded-3xl flex items-center justify-center mx-auto mb-4">
+              <span className="text-5xl">⚠️</span>
+            </div>
             <p className="text-sm text-gray-600">{error}</p>
           </div>
         ) : (
           <>
-            {/* Session Info */}
-            <div className="card p-5 mb-6">
+            {/* Capacity Card */}
+            <div className="bg-white rounded-3xl p-6 mb-6 shadow-lg border border-gray-100">
               <div className="flex items-center justify-between mb-4">
-                <div>
-                  <h2 className="text-xl font-bold text-gray-900">🌙 {getSessionTitle()}</h2>
-                  <p className="text-sm text-gray-600">{getSessionTime()}</p>
-                </div>
-                {capacity.percentage === 100 && (
-                  <span className="px-3 py-1 bg-red-600 text-white text-xs font-bold rounded-full">
+                <h2 className="text-lg font-bold text-gray-900">Class Capacity</h2>
+                {capacity.percentage === 100 ? (
+                  <span className="px-4 py-2 bg-gradient-to-r from-red-500 to-red-600 text-white text-xs font-bold rounded-xl shadow-lg">
                     FULL
+                  </span>
+                ) : capacity.percentage >= 80 ? (
+                  <span className="px-4 py-2 bg-gradient-to-r from-orange-500 to-orange-600 text-white text-xs font-bold rounded-xl shadow-lg">
+                    ALMOST FULL
+                  </span>
+                ) : (
+                  <span className="px-4 py-2 bg-gradient-to-r from-green-500 to-emerald-600 text-white text-xs font-bold rounded-xl shadow-lg">
+                    AVAILABLE
                   </span>
                 )}
               </div>
 
-              <div className="bg-gray-50 rounded-lg p-4">
-                <div className="flex items-center justify-between mb-2">
-                  <span className="text-sm text-gray-600">Capacity</span>
-                  <span className={`text-2xl font-bold ${getCapacityColor(capacity.percentage)}`}>
-                    {capacity.booked} / {capacity.maxCapacity}
+              <div className="bg-gradient-to-br from-purple-50 to-pink-50 rounded-2xl p-5">
+                <div className="flex items-center justify-between mb-3">
+                  <span className="text-sm text-gray-600 font-medium">Current Capacity</span>
+                  <span className={`text-4xl font-bold ${getCapacityColor(capacity.percentage)}`}>
+                    {capacity.booked}<span className="text-2xl text-gray-400">/{capacity.maxCapacity}</span>
                   </span>
                 </div>
-                <div className="w-full bg-gray-200 rounded-full h-3 overflow-hidden">
+                <div className="w-full bg-gray-200 rounded-full h-4 overflow-hidden shadow-inner">
                   <div
                     className={`h-full transition-all ${
                       capacity.percentage === 0
                         ? 'bg-gray-400'
                         : capacity.percentage <= 33
-                        ? 'bg-green-600'
+                        ? 'bg-gradient-to-r from-green-500 to-green-600'
                         : capacity.percentage <= 66
-                        ? 'bg-blue-600'
+                        ? 'bg-gradient-to-r from-blue-500 to-blue-600'
                         : capacity.percentage < 100
-                        ? 'bg-orange-600'
-                        : 'bg-red-600'
+                        ? 'bg-gradient-to-r from-orange-500 to-orange-600'
+                        : 'bg-gradient-to-r from-red-500 to-red-600'
                     }`}
                     style={{ width: `${capacity.percentage}%` }}
                   />
                 </div>
-                <p className="text-xs text-gray-500 mt-2">
-                  {capacity.available} spot{capacity.available !== 1 ? 's' : ''} remaining
-                </p>
+                <div className="flex items-center justify-between mt-3">
+                  <p className="text-sm text-gray-600">
+                    {capacity.available} spot{capacity.available !== 1 ? 's' : ''} remaining
+                  </p>
+                  <p className="text-sm font-bold text-gray-700">
+                    {capacity.percentage}% Full
+                  </p>
+                </div>
               </div>
             </div>
 
             {/* Bookings List */}
             <div className="mb-6">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">
-                Bookings ({bookings.length})
-              </h3>
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-lg font-bold text-gray-900">
+                  Bookings ({bookings.length})
+                </h3>
+                <button
+                  onClick={() => setShowAddBookingModal(true)}
+                  disabled={capacity.percentage === 100}
+                  className="px-4 py-2 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-xl text-sm font-semibold shadow-lg hover:from-purple-700 hover:to-pink-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed transform hover:scale-105 active:scale-95"
+                >
+                  + Add Booking
+                </button>
+              </div>
 
               {bookings.length === 0 ? (
-                <div className="text-center py-12 bg-white rounded-2xl">
-                  <div className="text-6xl mb-4">📅</div>
-                  <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                <div className="bg-white rounded-3xl p-12 text-center shadow-lg border border-gray-100">
+                  <div className="w-20 h-20 bg-gradient-to-br from-purple-100 to-pink-100 rounded-3xl flex items-center justify-center mx-auto mb-4">
+                    <span className="text-5xl">📅</span>
+                  </div>
+                  <h3 className="text-xl font-bold text-gray-900 mb-2">
                     No bookings yet
                   </h3>
-                  <p className="text-sm text-gray-600 mb-4">
+                  <p className="text-sm text-gray-600 mb-6">
                     This session is available for booking
                   </p>
                   <button
                     onClick={() => setShowAddBookingModal(true)}
-                    className="btn-primary"
+                    className="px-6 py-3 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-xl font-semibold shadow-lg hover:from-purple-700 hover:to-pink-700 transition-all transform hover:scale-105 active:scale-95"
                   >
-                    + Add Booking
+                    + Add First Booking
                   </button>
                 </div>
               ) : (
-                <div className="space-y-3">
-                  {bookings.map((booking) => (
-                    <div key={booking.id} className="card p-4">
-                      <div className="flex items-start justify-between">
-                        <div className="flex-1">
-                          <div className="flex items-center gap-2 mb-2">
-                            <h4 className="font-semibold text-gray-900">{booking.studentName}</h4>
-                            <span
-                              className={`px-2 py-0.5 rounded-full text-xs font-medium ${
+                <div className="space-y-4">
+                  {bookings.map((booking, index) => (
+                    <div
+                      key={booking.id}
+                      className="relative bg-white rounded-3xl p-5 shadow-lg hover:shadow-2xl transition-all duration-300 border border-gray-100 overflow-hidden"
+                      style={{ animationDelay: `${index * 50}ms` }}
+                    >
+                      {/* Status indicator bar */}
+                      <div className={`absolute left-0 top-0 bottom-0 w-1.5 ${
+                        booking.status === 'CONFIRMED' ? 'bg-gradient-to-b from-green-400 to-green-600' :
+                        booking.status === 'PENDING' ? 'bg-gradient-to-b from-yellow-400 to-yellow-600' :
+                        booking.status === 'COMPLETED' ? 'bg-gradient-to-b from-blue-400 to-blue-600' :
+                        'bg-gradient-to-b from-gray-400 to-gray-600'
+                      }`}></div>
+
+                      <div className="pl-3">
+                        {/* Header */}
+                        <div className="flex items-start justify-between mb-4">
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-2 mb-2">
+                              <h4 className="text-lg font-bold text-gray-900 truncate">{booking.studentName}</h4>
+                              <span className={`px-3 py-1 rounded-xl text-xs font-bold whitespace-nowrap ${
                                 booking.status === BookingStatus.CONFIRMED
                                   ? 'bg-green-100 text-green-800'
                                   : booking.status === BookingStatus.PENDING
@@ -288,76 +352,94 @@ function SessionDetailContent() {
                                   : booking.status === BookingStatus.COMPLETED
                                   ? 'bg-blue-100 text-blue-800'
                                   : 'bg-gray-100 text-gray-800'
-                              }`}
+                              }`}>
+                                {booking.status}
+                              </span>
+                            </div>
+
+                            <div className="space-y-1.5">
+                              {booking.studentPhone && (
+                                <p className="text-sm text-gray-600 flex items-center gap-2">
+                                  <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
+                                  </svg>
+                                  {booking.studentPhone}
+                                </p>
+                              )}
+                              {booking.studentEmail && (
+                                <p className="text-sm text-gray-600 flex items-center gap-2 truncate">
+                                  <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                                  </svg>
+                                  {booking.studentEmail}
+                                </p>
+                              )}
+                            </div>
+                          </div>
+
+                          {/* Action Buttons */}
+                          <div className="flex gap-2 ml-3">
+                            <button
+                              onClick={() => setEditBooking(booking)}
+                              className="p-2.5 rounded-xl bg-blue-50 text-blue-600 hover:bg-blue-100 transition-colors"
+                              title="Edit booking"
                             >
-                              {booking.status}
-                            </span>
+                              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                              </svg>
+                            </button>
+                            <button
+                              onClick={() => setDeleteConfirm(booking.id)}
+                              className="p-2.5 rounded-xl bg-red-50 text-red-600 hover:bg-red-100 transition-colors"
+                              title="Delete booking"
+                            >
+                              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                              </svg>
+                            </button>
+                          </div>
+                        </div>
+
+                        {/* Details Grid */}
+                        <div className="grid grid-cols-2 gap-3 pt-3 border-t border-gray-100">
+                          <div className="flex items-center gap-2">
+                            <div className="w-10 h-10 bg-purple-100 rounded-xl flex items-center justify-center">
+                              <svg className="w-5 h-5 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                              </svg>
+                            </div>
+                            <div>
+                              <p className="text-xs text-gray-500 font-medium">People</p>
+                              <p className="text-sm font-bold text-gray-900">{booking.numberOfPeople} PAX</p>
+                            </div>
                           </div>
 
-                          {booking.studentEmail && (
-                            <p className="text-sm text-gray-600 flex items-center gap-1 mb-1">
-                              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-                              </svg>
-                              {booking.studentEmail}
-                            </p>
-                          )}
-
-                          {booking.studentPhone && (
-                            <p className="text-sm text-gray-600 flex items-center gap-1 mb-1">
-                              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
-                              </svg>
-                              {booking.studentPhone}
-                            </p>
-                          )}
-
-                          <div className="flex flex-wrap items-center gap-4 mt-2">
-                            <p className="text-sm text-gray-700">
-                              <span className="font-medium">PAX:</span> {booking.numberOfPeople} {booking.numberOfPeople === 1 ? 'person' : 'people'}
-                            </p>
-                            {booking.totalAmountPaid && (
-                              <p className="text-sm text-gray-700">
-                                <span className="font-medium">Amount:</span> ₹{booking.totalAmountPaid.toFixed(2)}
-                                {booking.numberOfPeople > 1 && (
-                                  <span className="text-xs text-gray-500 ml-1">
-                                    (₹{(booking.totalAmountPaid / booking.numberOfPeople).toFixed(2)}/person)
-                                  </span>
-                                )}
+                          {booking.totalAmountPaid ? (
+                            <div className="text-right">
+                              <p className="text-xs text-gray-500 font-medium">Amount</p>
+                              <p className="text-lg font-bold bg-gradient-to-r from-green-600 to-emerald-600 bg-clip-text text-transparent">
+                                ₹{booking.totalAmountPaid > 999 ? `${(booking.totalAmountPaid / 1000).toFixed(1)}k` : booking.totalAmountPaid.toFixed(0)}
                               </p>
-                            )}
-                            <p className="text-xs text-gray-500">
-                              Booked: {formatCreatedDate(booking.createdAt)}
-                            </p>
-                          </div>
-
-                          {booking.notes && (
-                            <p className="text-sm text-gray-600 mt-2 italic">
-                              Note: {booking.notes}
-                            </p>
+                              {booking.numberOfPeople > 1 && (
+                                <p className="text-xs text-gray-500">
+                                  ₹{(booking.totalAmountPaid / booking.numberOfPeople).toFixed(0)}/person
+                                </p>
+                              )}
+                            </div>
+                          ) : (
+                            <div className="text-right">
+                              <p className="text-xs text-gray-500 font-medium">Booked</p>
+                              <p className="text-sm font-semibold text-gray-900">{formatCreatedDate(booking.createdAt)}</p>
+                            </div>
                           )}
                         </div>
 
-                        <div className="flex gap-2">
-                          <button
-                            onClick={() => setEditBooking(booking)}
-                            className="p-2 rounded-full text-blue-600 hover:bg-blue-50 transition-colors"
-                            title="Edit booking"
-                          >
-                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                            </svg>
-                          </button>
-                          <button
-                            onClick={() => setDeleteConfirm(booking.id)}
-                            className="p-2 rounded-full text-red-600 hover:bg-red-50 transition-colors"
-                            title="Delete booking"
-                          >
-                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                            </svg>
-                          </button>
-                        </div>
+                        {booking.notes && (
+                          <div className="mt-3 p-3 bg-gray-50 rounded-xl">
+                            <p className="text-xs text-gray-500 font-medium mb-1">Note</p>
+                            <p className="text-sm text-gray-700 italic">{booking.notes}</p>
+                          </div>
+                        )}
                       </div>
                     </div>
                   ))}
@@ -365,16 +447,6 @@ function SessionDetailContent() {
               )}
             </div>
 
-            {/* Actions */}
-            <div className="space-y-3">
-              <button
-                onClick={() => setShowAddBookingModal(true)}
-                className="w-full btn-primary"
-                disabled={capacity.percentage === 100}
-              >
-                + Add Booking to Session
-              </button>
-            </div>
           </>
         )}
       </main>
