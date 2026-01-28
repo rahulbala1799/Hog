@@ -14,6 +14,8 @@ export const auth = betterAuth({
     (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'http://localhost:3000'),
   // No basePath when using Neon Auth - it handles all routes
   basePath: process.env.NEON_AUTH_BASE_URL ? '' : '/api/auth',
+  // Use BETTER_AUTH_SECRET or fallback to NEXTAUTH_SECRET for compatibility
+  secret: process.env.BETTER_AUTH_SECRET || process.env.NEXTAUTH_SECRET || 'default-secret-change-in-production',
   emailAndPassword: {
     enabled: true,
     requireEmailVerification: false,
