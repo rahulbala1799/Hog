@@ -134,7 +134,7 @@ export async function POST(request: Request) {
 export async function DELETE(request: Request) {
   try {
     // Require admin access
-    await requireAdmin()
+    const currentUser = await requireAdmin()
 
     const { searchParams } = new URL(request.url)
     const userId = searchParams.get('id')
@@ -147,7 +147,6 @@ export async function DELETE(request: Request) {
     }
 
     // Prevent deleting yourself (optional safety check)
-    const currentUser = await requireAdmin()
     if (currentUser.id === userId) {
       return NextResponse.json(
         { error: 'You cannot delete your own account' },
