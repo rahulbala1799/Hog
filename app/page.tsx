@@ -1,50 +1,14 @@
 'use client'
 
-import { useState, useEffect, Suspense } from 'react'
-import { useRouter, useSearchParams } from 'next/navigation'
-import Link from 'next/link'
+import { useState } from 'react'
+import { useRouter } from 'next/navigation'
 
-function LoginForm() {
+export default function Home() {
   const router = useRouter()
-  const searchParams = useSearchParams()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
-  const [canSignUp, setCanSignUp] = useState(false)
-  const [checkingSignUp, setCheckingSignUp] = useState(true)
-
-  useEffect(() => {
-    // Check for success message from signup
-    const message = searchParams.get('message')
-    if (message) {
-      // Show success message (you can add a success banner here if needed)
-      console.log('Message:', message)
-    }
-
-    // Check if sign-up is available
-    const checkSignUp = async () => {
-      try {
-        const response = await fetch('/api/auth/check-admin')
-        if (!response.ok) {
-          console.error('Failed to check admin status:', response.status)
-          // If API fails, allow sign-up attempt (user can try manually)
-          setCanSignUp(true)
-          return
-        }
-        const data = await response.json()
-        setCanSignUp(data.canSignUp)
-      } catch (err) {
-        console.error('Error checking sign-up availability:', err)
-        // If error, allow sign-up attempt (user can try manually)
-        setCanSignUp(true)
-      } finally {
-        setCheckingSignUp(false)
-      }
-    }
-
-    checkSignUp()
-  }, [searchParams])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -168,53 +132,8 @@ function LoginForm() {
               {loading ? 'Signing in...' : 'Sign in'}
             </button>
           </form>
-
-          {/* Sign-up Link (only show if no admin exists) */}
-          {!checkingSignUp && canSignUp && (
-            <div className="mt-6 text-center">
-              <p className="text-sm text-gray-600 mb-2">
-                No admin account exists yet
-              </p>
-              <Link
-                href="/signup"
-                className="text-sm font-medium text-purple-600 hover:text-purple-500"
-              >
-                Create Superadmin Account →
-              </Link>
-            </div>
-          )}
-
-          {/* Always show signup link at bottom for manual access */}
-          {!checkingSignUp && !canSignUp && (
-            <div className="mt-6 text-center">
-              <p className="text-xs text-gray-500 mb-2">
-                Need to create an account?
-              </p>
-              <Link
-                href="/signup"
-                className="text-xs font-medium text-purple-600 hover:text-purple-500"
-              >
-                Try Sign Up →
-              </Link>
-            </div>
-          )}
         </div>
       </div>
     </div>
-  )
-}
-
-export default function Home() {
-  return (
-    <Suspense fallback={
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-purple-50 via-pink-50 to-orange-50">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600 mx-auto"></div>
-          <p className="mt-4 text-gray-600">Loading...</p>
-        </div>
-      </div>
-    }>
-      <LoginForm />
-    </Suspense>
   )
 }

@@ -4,8 +4,8 @@ import type { NextRequest } from 'next/server'
 export async function middleware(request: NextRequest) {
   const path = request.nextUrl.pathname
 
-  // Allow access to login and signup pages without authentication
-  if (path === '/' || path === '/signup') {
+  // Allow access to login page without authentication
+  if (path === '/') {
     return NextResponse.next()
   }
 
