@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { PrismaClient } from '@prisma/client'
-import { renderToStream } from '@react-pdf/renderer'
+import { renderToBuffer } from '@react-pdf/renderer'
+import { put } from '@vercel/blob'
 import QRCode from 'qrcode'
 import TicketDocument from './TicketDocument'
 
@@ -57,29 +58,22 @@ export async function GET(
       qrCodeDataUrl,
     }
 
-    // Create PDF stream
-    const stream = await renderToStream(TicketDocument(ticketData))
+    // Generate PDF buffer
+    const pdfBuffer = await renderToBuffer(TicketDocument(ticketData))
 
-    // Convert stream to buffer
-    const chunks: Uint8Array[] = []
-    
-    return new Promise<NextResponse>((resolve, reject) => {
-      stream.on('data', (chunk) => chunks.push(chunk))
-      stream.on('end', () => {
-        const pdfBuffer = Buffer.concat(chunks)
-        
-        resolve(
-          new NextResponse(pdfBuffer as any, {
-            status: 200,
-            headers: {
-              'Content-Type': 'application/pdf',
-              'Content-Disposition': `attachment; filename="ticket-${booking.issueNumber}.pdf"`,
-              'Content-Length': pdfBuffer.length.toString(),
-            },
-          })
-        )
-      })
-      stream.on('error', reject)
+    // Upload to Vercel Blob
+    const filename = `tickets/${booking.issueNumber}-${Date.now()}.pdf`
+    const blob = await put(filename, pdfBuffer, {
+      access: 'public',
+      contentType: 'application/pdf',
+    })
+
+    // Return the blob URL
+    return NextResponse.json({
+      url: blob.url,
+      filename: `ticket-${booking.issueNumber}.pdf`,
+      issueNumber: booking.issueNumber,
+      guestName: booking.studentName,
     })
   } catch (error) {
     console.error('Error generating ticket:', error)

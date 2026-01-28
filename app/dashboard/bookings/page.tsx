@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { useState, useEffect } from 'react'
 import { BookingStatus, SessionTime } from '@prisma/client'
 import BookingModal from '../calendar/components/BookingModal'
+import TicketModal from '@/app/components/TicketModal'
 
 interface Booking {
   id: string
@@ -26,6 +27,7 @@ export default function BookingsPage() {
   const [loading, setLoading] = useState(true)
   const [filter, setFilter] = useState<string>('All')
   const [showBookingModal, setShowBookingModal] = useState(false)
+  const [ticketBookingId, setTicketBookingId] = useState<string | null>(null)
 
   useEffect(() => {
     fetchBookings()
@@ -342,6 +344,15 @@ export default function BookingsPage() {
           setShowBookingModal(false)
         }}
       />
+
+      {/* Ticket Modal */}
+      {ticketBookingId && (
+        <TicketModal
+          bookingId={ticketBookingId}
+          isOpen={!!ticketBookingId}
+          onClose={() => setTicketBookingId(null)}
+        />
+      )}
     </div>
   )
 }

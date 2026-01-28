@@ -4,6 +4,7 @@ import { useRouter, useSearchParams } from 'next/navigation'
 import { useState, useEffect, Suspense } from 'react'
 import { SessionTime, BookingStatus } from '@prisma/client'
 import BookingModal from '../components/BookingModal'
+import TicketModal from '@/app/components/TicketModal'
 
 interface Booking {
   id: string
@@ -39,6 +40,7 @@ function SessionDetailContent() {
   const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null)
   const [editBooking, setEditBooking] = useState<Booking | null>(null)
   const [showAddBookingModal, setShowAddBookingModal] = useState(false)
+  const [ticketBookingId, setTicketBookingId] = useState<string | null>(null)
 
   const fetchSessionData = async () => {
     setLoading(true)
@@ -384,7 +386,7 @@ function SessionDetailContent() {
                           {/* Action Buttons */}
                           <div className="flex gap-2 ml-3">
                             <button
-                              onClick={() => window.open(`/api/bookings/${booking.id}/ticket`, '_blank')}
+                              onClick={() => setTicketBookingId(booking.id)}
                               className="p-2.5 rounded-xl bg-purple-50 text-purple-600 hover:bg-purple-100 transition-colors"
                               title="Generate ticket"
                             >
@@ -515,6 +517,15 @@ function SessionDetailContent() {
             fetchSessionData()
             setEditBooking(null)
           }}
+        />
+      )}
+
+      {/* Ticket Modal */}
+      {ticketBookingId && (
+        <TicketModal
+          bookingId={ticketBookingId}
+          isOpen={!!ticketBookingId}
+          onClose={() => setTicketBookingId(null)}
         />
       )}
     </div>
