@@ -4,64 +4,44 @@ import { Document, Page, Text, View, Image, StyleSheet } from '@react-pdf/render
 // Create styles for a beautiful ticket
 const styles = StyleSheet.create({
   page: {
-    width: 420,
-    height: 594, // A5 height for standard ticket size
+    width: 400,
+    height: 500, // Reduced from 594
     backgroundColor: '#FFFFFF',
   },
-  // Gradient header background
+  // Simplified header
   headerContainer: {
     backgroundColor: '#7C3AED',
-    paddingTop: 40,
-    paddingBottom: 30,
+    paddingTop: 30,
+    paddingBottom: 25,
     paddingHorizontal: 35,
-    position: 'relative',
-  },
-  brandContainer: {
-    alignItems: 'center',
-    marginBottom: 10,
   },
   brandName: {
-    fontSize: 36,
+    fontSize: 32,
     fontWeight: 'bold',
     color: '#FFFFFF',
     letterSpacing: 3,
     textAlign: 'center',
   },
-  brandTagline: {
-    fontSize: 10,
-    color: '#E9D5FF',
-    letterSpacing: 2,
-    textAlign: 'center',
-    marginTop: 8,
-  },
-  ticketType: {
-    fontSize: 11,
-    color: '#DDD6FE',
-    textAlign: 'center',
-    letterSpacing: 1,
-    marginTop: 12,
-    textTransform: 'uppercase',
-  },
   // Main content
   mainContent: {
     flex: 1,
-    paddingHorizontal: 35,
-    paddingTop: 30,
+    paddingHorizontal: 30,
+    paddingTop: 25,
   },
   // Issue number - prominent
   issueNumberContainer: {
     alignItems: 'center',
-    marginBottom: 25,
+    marginBottom: 20,
   },
   issueNumberLabel: {
     fontSize: 9,
     color: '#9CA3AF',
     letterSpacing: 1,
-    marginBottom: 6,
+    marginBottom: 5,
     textTransform: 'uppercase',
   },
   issueNumber: {
-    fontSize: 24,
+    fontSize: 22,
     fontWeight: 'bold',
     color: '#7C3AED',
     letterSpacing: 2,
@@ -70,21 +50,21 @@ const styles = StyleSheet.create({
   guestSection: {
     backgroundColor: '#F9FAFB',
     borderRadius: 12,
-    padding: 20,
-    marginBottom: 20,
+    padding: 16,
+    marginBottom: 16,
   },
   sectionLabel: {
-    fontSize: 9,
+    fontSize: 8,
     color: '#6B7280',
     letterSpacing: 1,
-    marginBottom: 8,
+    marginBottom: 6,
     textTransform: 'uppercase',
   },
   guestName: {
-    fontSize: 22,
+    fontSize: 18,
     fontWeight: 'bold',
     color: '#111827',
-    marginBottom: 12,
+    marginBottom: 10,
   },
   guestDetails: {
     flexDirection: 'row',
@@ -96,14 +76,14 @@ const styles = StyleSheet.create({
     marginRight: 20,
   },
   detailIcon: {
-    width: 16,
-    height: 16,
+    width: 14,
+    height: 14,
     backgroundColor: '#7C3AED',
-    borderRadius: 8,
-    marginRight: 8,
+    borderRadius: 7,
+    marginRight: 6,
   },
   detailText: {
-    fontSize: 12,
+    fontSize: 11,
     color: '#374151',
     fontWeight: 'bold',
   },
@@ -111,7 +91,7 @@ const styles = StyleSheet.create({
   sessionGrid: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    marginBottom: 20,
+    marginBottom: 16,
   },
   sessionCard: {
     flex: 1,
@@ -119,74 +99,67 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#E5E7EB',
     borderRadius: 10,
-    padding: 15,
-    marginHorizontal: 5,
+    padding: 12,
+    marginHorizontal: 4,
   },
   sessionLabel: {
     fontSize: 8,
     color: '#9CA3AF',
     letterSpacing: 1,
-    marginBottom: 6,
+    marginBottom: 5,
     textTransform: 'uppercase',
   },
   sessionValue: {
-    fontSize: 12,
+    fontSize: 11,
     color: '#1F2937',
     fontWeight: 'bold',
     lineHeight: 1.3,
   },
-  // QR section - premium layout
+  // QR section - compact
   qrSection: {
     backgroundColor: '#F9FAFB',
     borderRadius: 12,
-    padding: 20,
+    padding: 14,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    marginTop: 15,
+    marginTop: 10,
   },
   qrLeft: {
     flex: 1,
-    marginRight: 15,
+    marginRight: 12,
   },
   qrTitle: {
-    fontSize: 13,
+    fontSize: 11,
     fontWeight: 'bold',
     color: '#111827',
-    marginBottom: 6,
+    marginBottom: 4,
   },
   qrDescription: {
-    fontSize: 9,
+    fontSize: 8,
     color: '#6B7280',
-    lineHeight: 1.5,
+    lineHeight: 1.4,
   },
   qrCodeImage: {
-    width: 90,
-    height: 90,
+    width: 75,
+    height: 75,
     borderRadius: 8,
   },
   // Footer
   footer: {
     position: 'absolute',
-    bottom: 25,
-    left: 35,
-    right: 35,
+    bottom: 20,
+    left: 30,
+    right: 30,
     borderTopWidth: 1,
     borderTopColor: '#E5E7EB',
-    paddingTop: 15,
+    paddingTop: 12,
   },
   footerText: {
-    fontSize: 8,
+    fontSize: 7,
     color: '#9CA3AF',
     textAlign: 'center',
     lineHeight: 1.4,
-  },
-  footerBrand: {
-    fontSize: 7,
-    color: '#D1D5DB',
-    textAlign: 'center',
-    marginTop: 8,
-    letterSpacing: 1,
   },
 })
 
@@ -201,14 +174,10 @@ interface TicketData {
 
 const TicketDocument = (data: TicketData) => (
   <Document>
-    <Page size={{ width: 420, height: 594 }} style={styles.page}>
-      {/* Header */}
+    <Page size={{ width: 400, height: 500 }} style={styles.page}>
+      {/* Simplified Header */}
       <View style={styles.headerContainer}>
-        <View style={styles.brandContainer}>
-          <Text style={styles.brandName}>HOUSE OF GLOW</Text>
-          <Text style={styles.brandTagline}>ILLUMINATE YOUR BEAUTY</Text>
-        </View>
-        <Text style={styles.ticketType}>● Admission Ticket ●</Text>
+        <Text style={styles.brandName}>HOUSE OF GLOW</Text>
       </View>
 
       {/* Main Content */}
@@ -250,7 +219,7 @@ const TicketDocument = (data: TicketData) => (
           <View style={styles.qrLeft}>
             <Text style={styles.qrTitle}>Visit Our Website</Text>
             <Text style={styles.qrDescription}>
-              Scan this QR code with your phone camera to visit houseofglow.in and explore our services
+              Scan to visit houseofglow.in
             </Text>
           </View>
           {/* eslint-disable-next-line jsx-a11y/alt-text */}
@@ -261,11 +230,7 @@ const TicketDocument = (data: TicketData) => (
       {/* Footer */}
       <View style={styles.footer}>
         <Text style={styles.footerText}>
-          Please present this ticket at the venue entrance{'\n'}
-          Valid only for the date and time mentioned above
-        </Text>
-        <Text style={styles.footerBrand}>
-          HOUSE OF GLOW © 2026
+          Please present this ticket at the venue entrance
         </Text>
       </View>
     </Page>
