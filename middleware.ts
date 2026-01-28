@@ -1,5 +1,3 @@
-import { auth } from '@/lib/auth'
-import { toNextJsMiddleware } from 'better-auth/next-js'
 import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
 
@@ -11,16 +9,15 @@ export async function middleware(request: NextRequest) {
     return NextResponse.next()
   }
 
-  // Use Better Auth middleware for protected routes
-  const handler = toNextJsMiddleware(auth)
-  const response = await handler(request)
-
-  // If not authenticated, redirect to login
-  if (response?.status === 401 || response?.status === 403) {
+  // Check for session cookie
+  const sessionCookie = request.cookies.get('better-auth.session_token')
+  
+  // If no session, redirect to login
+  if (!sessionCookie) {
     return NextResponse.redirect(new URL('/', request.url))
   }
 
-  return response || NextResponse.next()
+  return NextResponse.next()
 }
 
 export const config = {
@@ -29,4 +26,5 @@ export const config = {
     '/staff/:path*',
     '/dashboard/:path*',
   ],
+  runtime: 'nodejs', // Use Node.js runtime instead of Edge
 }
