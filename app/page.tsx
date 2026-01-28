@@ -1,15 +1,43 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { signIn } from '@/lib/auth/client'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
+import Link from 'next/link'
 
 export default function Home() {
   const router = useRouter()
+  const searchParams = useSearchParams()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
+  const [canSignUp, setCanSignUp] = useState(false)
+  const [checkingSignUp, setCheckingSignUp] = useState(true)
+
+  useEffect(() => {
+    // Check for success message from signup
+    const message = searchParams.get('message')
+    if (message) {
+      // Show success message (you can add a success banner here if needed)
+      console.log('Message:', message)
+    }
+
+    // Check if sign-up is available
+    const checkSignUp = async () => {
+      try {
+        const response = await fetch('/api/auth/check-admin')
+        const data = await response.json()
+        setCanSignUp(data.canSignUp)
+      } catch (err) {
+        console.error('Error checking sign-up availability:', err)
+      } finally {
+        setCheckingSignUp(false)
+      }
+    }
+
+    checkSignUp()
+  }, [searchParams])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -127,6 +155,21 @@ export default function Home() {
               {loading ? 'Signing in...' : 'Sign in'}
             </button>
           </form>
+
+          {/* Sign-up Link (only show if no admin exists) */}
+          {!checkingSignUp && canSignUp && (
+            <div className="mt-6 text-center">
+              <p className="text-sm text-gray-600 mb-2">
+                No admin account exists yet
+              </p>
+              <Link
+                href="/signup"
+                className="text-sm font-medium text-purple-600 hover:text-purple-500"
+              >
+                Create Superadmin Account →
+              </Link>
+            </div>
+          )}
         </div>
       </div>
     </div>
