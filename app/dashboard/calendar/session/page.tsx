@@ -395,6 +395,20 @@ function SessionDetailContent() {
           </div>
         </div>
       )}
+
+      {/* Edit Booking Modal */}
+      {editBooking && (
+        <BookingModal
+          isOpen={!!editBooking}
+          onClose={() => setEditBooking(null)}
+          selectedDate={new Date(editBooking.sessionDate)}
+          booking={editBooking}
+          onSuccess={() => {
+            fetchSessionData()
+            setEditBooking(null)
+          }}
+        />
+      )}
     </div>
   )
 }
