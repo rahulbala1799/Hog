@@ -96,7 +96,7 @@ export default function BookingModal({
       fetchSettings()
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [formData.sessionDate, isOpen])
+  }, [formData.sessionDate, isOpen, fetchCapacity, fetchSettings])
 
   const fetchSettings = async () => {
     try {

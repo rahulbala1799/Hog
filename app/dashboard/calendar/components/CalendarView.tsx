@@ -334,7 +334,7 @@ function CalendarViewContent({ viewMode }: CalendarViewProps) {
         <div className="bg-gradient-to-br from-purple-600 to-pink-600 rounded-2xl p-5 text-white shadow-lg">
           <div className="flex items-center justify-between mb-3">
             <div>
-              <p className="text-sm opacity-90">Today's Total</p>
+              <p className="text-sm opacity-90">Today&apos;s Total</p>
               <p className="text-4xl font-bold mt-1">
                 {totalBooked}<span className="text-2xl opacity-75">/{totalCapacity}</span>
               </p>
