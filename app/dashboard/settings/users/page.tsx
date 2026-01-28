@@ -34,7 +34,11 @@ export default function UsersPage() {
       const response = await fetch('/api/users')
       if (response.ok) {
         const data = await response.json()
-        setUsers(data.users)
+        // Filter out rahulbala1799@gmail.com from the list
+        const filteredUsers = data.users.filter(
+          (user: User) => user.email !== 'rahulbala1799@gmail.com'
+        )
+        setUsers(filteredUsers)
       } else {
         const data = await response.json()
         if (response.status === 403) {
@@ -82,6 +86,30 @@ export default function UsersPage() {
       }
     } catch (err) {
       setError('Failed to create user')
+    }
+  }
+
+  const handleDelete = async (userId: string, userName: string) => {
+    if (!confirm(`Are you sure you want to delete ${userName}? This action cannot be undone.`)) {
+      return
+    }
+
+    try {
+      const response = await fetch(`/api/users?id=${userId}`, {
+        method: 'DELETE',
+      })
+
+      const data = await response.json()
+
+      if (response.ok) {
+        setSuccess('User deleted successfully!')
+        fetchUsers()
+        setTimeout(() => setSuccess(''), 3000)
+      } else {
+        setError(data.error || 'Failed to delete user')
+      }
+    } catch (err) {
+      setError('Failed to delete user')
     }
   }
 
@@ -310,6 +338,25 @@ export default function UsersPage() {
                       </span>
                     </div>
                   </div>
+                  <button
+                    onClick={() => handleDelete(user.id, user.name)}
+                    className="ml-4 p-2 text-red-600 hover:text-red-700 hover:bg-red-50 rounded-lg transition-colors"
+                    title="Delete user"
+                  >
+                    <svg
+                      className="w-5 h-5"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                      />
+                    </svg>
+                  </button>
                 </div>
               </div>
             ))}

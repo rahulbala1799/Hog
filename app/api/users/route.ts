@@ -130,3 +130,57 @@ export async function POST(request: Request) {
     )
   }
 }
+
+export async function DELETE(request: Request) {
+  try {
+    // Require admin access
+    await requireAdmin()
+
+    const { searchParams } = new URL(request.url)
+    const userId = searchParams.get('id')
+
+    if (!userId) {
+      return NextResponse.json(
+        { error: 'User ID is required' },
+        { status: 400 }
+      )
+    }
+
+    // Prevent deleting yourself (optional safety check)
+    const currentUser = await requireAdmin()
+    if (currentUser.id === userId) {
+      return NextResponse.json(
+        { error: 'You cannot delete your own account' },
+        { status: 400 }
+      )
+    }
+
+    // Delete user
+    await prisma.user.delete({
+      where: { id: userId },
+    })
+
+    return NextResponse.json({ success: true })
+  } catch (error: any) {
+    console.error('Error deleting user:', error)
+    
+    if (error.message === 'Not authenticated' || error.message === 'Admin access required') {
+      return NextResponse.json(
+        { error: error.message },
+        { status: 403 }
+      )
+    }
+
+    if (error.code === 'P2025') {
+      return NextResponse.json(
+        { error: 'User not found' },
+        { status: 404 }
+      )
+    }
+
+    return NextResponse.json(
+      { error: 'Failed to delete user' },
+      { status: 500 }
+    )
+  }
+}
