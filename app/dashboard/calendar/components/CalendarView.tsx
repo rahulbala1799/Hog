@@ -198,6 +198,10 @@ function CalendarViewContent({ viewMode }: CalendarViewProps) {
     const session1Capacity = getSessionCapacity(SessionTime.SESSION_1)
     const session2Capacity = getSessionCapacity(SessionTime.SESSION_2)
 
+    const totalBooked = session1Capacity.booked + session2Capacity.booked
+    const totalCapacity = maxCapacity * 2
+    const totalPercentage = Math.round((totalBooked / totalCapacity) * 100)
+
     const SessionCard = ({
       title,
       time,
@@ -211,57 +215,147 @@ function CalendarViewContent({ viewMode }: CalendarViewProps) {
       bookings: Booking[]
       capacity: { booked: number; available: number; percentage: number }
     }) => (
-      <div
-        onClick={() => router.push(`/dashboard/calendar/session?date=${formatDate(currentDate)}&session=${sessionTime}`)}
-        className={`p-5 rounded-2xl border-2 transition-all cursor-pointer hover:shadow-lg ${getCapacityBg(capacity.percentage)}`}
-      >
-        <div className="flex items-center justify-between mb-3">
-          <div>
-            <h3 className="text-lg font-semibold text-gray-900">{title}</h3>
-            <p className="text-sm text-gray-600">{time}</p>
+      <div className={`rounded-2xl border-2 overflow-hidden transition-all ${getCapacityBg(capacity.percentage)}`}>
+        {/* Session Header - Clickable to view details */}
+        <div
+          onClick={() => router.push(`/dashboard/calendar/session?date=${formatDate(currentDate)}&session=${sessionTime}`)}
+          className="p-5 cursor-pointer hover:bg-white/50 transition-colors"
+        >
+          <div className="flex items-center justify-between mb-3">
+            <div className="flex-1">
+              <h3 className="text-xl font-bold text-gray-900">{title}</h3>
+              <p className="text-sm text-gray-600 mt-0.5">{time}</p>
+            </div>
+            <div className="flex items-center gap-2">
+              {capacity.percentage === 100 ? (
+                <span className="px-3 py-1.5 bg-red-600 text-white text-xs font-bold rounded-full">
+                  FULL
+                </span>
+              ) : capacity.percentage === 0 ? (
+                <span className="px-3 py-1.5 bg-gray-400 text-white text-xs font-bold rounded-full">
+                  EMPTY
+                </span>
+              ) : (
+                <span className={`px-3 py-1.5 ${
+                  capacity.percentage <= 33 
+                    ? 'bg-green-100 text-green-700'
+                    : capacity.percentage <= 66
+                    ? 'bg-blue-100 text-blue-700'
+                    : 'bg-orange-100 text-orange-700'
+                } text-xs font-bold rounded-full`}>
+                  {capacity.available} LEFT
+                </span>
+              )}
+            </div>
           </div>
-          {capacity.percentage === 100 && (
-            <span className="px-3 py-1 bg-red-600 text-white text-xs font-bold rounded-full">
-              FULL
-            </span>
-          )}
+
+          {/* Capacity Bar */}
+          <div className="mb-3">
+            <div className="flex items-center justify-between mb-2">
+              <span className={`text-3xl font-bold ${getCapacityColor(capacity.percentage)}`}>
+                {capacity.booked}<span className="text-gray-400">/{maxCapacity}</span>
+              </span>
+              <span className="text-xs text-gray-500 uppercase tracking-wide font-medium">
+                {capacity.percentage}% Full
+              </span>
+            </div>
+            <div className="w-full bg-gray-200 rounded-full h-4 overflow-hidden">
+              <div
+                className={`h-full transition-all ${
+                  capacity.percentage === 0
+                    ? 'bg-gray-400'
+                    : capacity.percentage <= 33
+                    ? 'bg-green-600'
+                    : capacity.percentage <= 66
+                    ? 'bg-blue-600'
+                    : capacity.percentage < 100
+                    ? 'bg-orange-600'
+                    : 'bg-red-600'
+                }`}
+                style={{ width: `${capacity.percentage}%` }}
+              />
+            </div>
+          </div>
         </div>
 
-        <div className="mb-3">
-          <div className="flex items-center justify-between mb-2">
-            <span className={`text-2xl font-bold ${getCapacityColor(capacity.percentage)}`}>
-              {capacity.booked}/{maxCapacity}
-            </span>
-            <span className="text-sm text-gray-600">Booked</span>
+        {/* Bookings Preview */}
+        {bookings.length > 0 ? (
+          <div className="border-t-2 border-gray-200 bg-white/30 p-4">
+            <div className="flex items-center justify-between mb-3">
+              <p className="text-sm font-semibold text-gray-700">
+                📋 {bookings.length} Booking{bookings.length !== 1 ? 's' : ''}
+              </p>
+              <button
+                onClick={() => router.push(`/dashboard/calendar/session?date=${formatDate(currentDate)}&session=${sessionTime}`)}
+                className="text-xs text-purple-600 font-medium hover:text-purple-700"
+              >
+                View All →
+              </button>
+            </div>
+            <div className="space-y-2">
+              {bookings.slice(0, 3).map((booking, index) => (
+                <div
+                  key={booking.id}
+                  className="flex items-center justify-between py-2 px-3 bg-white rounded-lg border border-gray-200"
+                >
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-medium text-gray-900 truncate">
+                      {booking.studentName}
+                    </p>
+                    <p className="text-xs text-gray-500">
+                      {booking.studentPhone}
+                    </p>
+                  </div>
+                  <div className="ml-3 flex items-center gap-2">
+                    <span className="px-2 py-1 bg-purple-100 text-purple-700 text-xs font-bold rounded">
+                      {booking.numberOfPeople} PAX
+                    </span>
+                  </div>
+                </div>
+              ))}
+              {bookings.length > 3 && (
+                <p className="text-xs text-center text-gray-500 pt-1">
+                  +{bookings.length - 3} more booking{bookings.length - 3 !== 1 ? 's' : ''}
+                </p>
+              )}
+            </div>
           </div>
-          <div className="w-full bg-gray-200 rounded-full h-3 overflow-hidden">
-            <div
-              className={`h-full transition-all ${
-                capacity.percentage === 0
-                  ? 'bg-gray-400'
-                  : capacity.percentage <= 33
-                  ? 'bg-green-600'
-                  : capacity.percentage <= 66
-                  ? 'bg-blue-600'
-                  : capacity.percentage < 100
-                  ? 'bg-orange-600'
-                  : 'bg-red-600'
-              }`}
-              style={{ width: `${capacity.percentage}%` }}
-            />
-          </div>
-        </div>
-
-        {bookings.length > 0 && (
-          <div className="text-sm text-gray-700">
-            <p className="font-medium">{bookings.length} booking{bookings.length !== 1 ? 's' : ''}</p>
+        ) : (
+          <div className="border-t-2 border-gray-200 bg-white/30 p-4">
+            <p className="text-sm text-gray-500 text-center">No bookings yet</p>
           </div>
         )}
       </div>
     )
 
     return (
-      <div className="space-y-4">
+      <div className="space-y-5">
+        {/* Daily Summary Stats */}
+        <div className="bg-gradient-to-br from-purple-600 to-pink-600 rounded-2xl p-5 text-white shadow-lg">
+          <div className="flex items-center justify-between mb-3">
+            <div>
+              <p className="text-sm opacity-90">Today's Total</p>
+              <p className="text-4xl font-bold mt-1">
+                {totalBooked}<span className="text-2xl opacity-75">/{totalCapacity}</span>
+              </p>
+            </div>
+            <div className="text-right">
+              <p className="text-sm opacity-90">Sessions</p>
+              <p className="text-4xl font-bold mt-1">2</p>
+            </div>
+          </div>
+          <div className="flex items-center gap-2">
+            <div className="flex-1 bg-white/20 rounded-full h-3 overflow-hidden">
+              <div
+                className="h-full bg-white transition-all"
+                style={{ width: `${totalPercentage}%` }}
+              />
+            </div>
+            <span className="text-sm font-semibold">{totalPercentage}%</span>
+          </div>
+        </div>
+
+        {/* Session Cards */}
         <SessionCard
           title="🌙 Session 1"
           time="7:00 PM - 8:00 PM"
@@ -564,52 +658,77 @@ function CalendarViewContent({ viewMode }: CalendarViewProps) {
           </div>
 
           {/* Date Navigation */}
-          <div className="flex items-center justify-between">
-            <button
-              onClick={() => navigateDate('prev')}
-              className="p-2 rounded-full hover:bg-gray-100 transition-colors"
-            >
-              <svg
-                className="w-5 h-5 text-gray-700"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M15 19l-7-7 7-7"
+          <div className="space-y-3">
+            {/* Date Picker for Daily View */}
+            {viewMode === 'daily' && (
+              <div className="flex gap-2">
+                <input
+                  type="date"
+                  value={formatDate(currentDate)}
+                  onChange={(e) => {
+                    if (e.target.value) {
+                      setCurrentDate(new Date(e.target.value))
+                    }
+                  }}
+                  className="flex-1 px-4 py-2.5 border-2 border-gray-300 rounded-xl text-sm font-medium text-gray-700 focus:outline-none focus:border-purple-500 transition-colors"
                 />
-              </svg>
-            </button>
-
-            <h2 className="text-base font-semibold text-gray-900">
-              {viewMode === 'daily'
-                ? formatDateDisplay(currentDate)
-                : viewMode === 'weekly'
-                ? `Week of ${currentDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}`
-                : currentDate.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}
-            </h2>
-
-            <button
-              onClick={() => navigateDate('next')}
-              className="p-2 rounded-full hover:bg-gray-100 transition-colors"
-            >
-              <svg
-                className="w-5 h-5 text-gray-700"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
+                <button
+                  onClick={() => setCurrentDate(new Date())}
+                  className="px-4 py-2.5 bg-purple-100 text-purple-700 rounded-xl text-sm font-semibold hover:bg-purple-200 transition-colors"
+                >
+                  Today
+                </button>
+              </div>
+            )}
+            
+            {/* Navigation Arrows */}
+            <div className="flex items-center justify-between">
+              <button
+                onClick={() => navigateDate('prev')}
+                className="p-2 rounded-full hover:bg-gray-100 transition-colors"
               >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M9 5l7 7-7 7"
-                />
-              </svg>
-            </button>
+                <svg
+                  className="w-5 h-5 text-gray-700"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M15 19l-7-7 7-7"
+                  />
+                </svg>
+              </button>
+
+              <h2 className="text-base font-semibold text-gray-900 text-center">
+                {viewMode === 'daily'
+                  ? formatDateDisplay(currentDate)
+                  : viewMode === 'weekly'
+                  ? `Week of ${currentDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}`
+                  : currentDate.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}
+              </h2>
+
+              <button
+                onClick={() => navigateDate('next')}
+                className="p-2 rounded-full hover:bg-gray-100 transition-colors"
+              >
+                <svg
+                  className="w-5 h-5 text-gray-700"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M9 5l7 7-7 7"
+                  />
+                </svg>
+              </button>
+            </div>
           </div>
         </div>
       </header>
