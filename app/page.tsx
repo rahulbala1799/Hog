@@ -27,10 +27,18 @@ function LoginForm() {
     const checkSignUp = async () => {
       try {
         const response = await fetch('/api/auth/check-admin')
+        if (!response.ok) {
+          console.error('Failed to check admin status:', response.status)
+          // If API fails, allow sign-up attempt (user can try manually)
+          setCanSignUp(true)
+          return
+        }
         const data = await response.json()
         setCanSignUp(data.canSignUp)
       } catch (err) {
         console.error('Error checking sign-up availability:', err)
+        // If error, allow sign-up attempt (user can try manually)
+        setCanSignUp(true)
       } finally {
         setCheckingSignUp(false)
       }
@@ -167,6 +175,21 @@ function LoginForm() {
                 className="text-sm font-medium text-purple-600 hover:text-purple-500"
               >
                 Create Superadmin Account →
+              </Link>
+            </div>
+          )}
+
+          {/* Always show signup link at bottom for manual access */}
+          {!checkingSignUp && !canSignUp && (
+            <div className="mt-6 text-center">
+              <p className="text-xs text-gray-500 mb-2">
+                Need to create an account?
+              </p>
+              <Link
+                href="/signup"
+                className="text-xs font-medium text-purple-600 hover:text-purple-500"
+              >
+                Try Sign Up →
               </Link>
             </div>
           )}

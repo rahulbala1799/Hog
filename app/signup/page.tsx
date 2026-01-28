@@ -20,6 +20,14 @@ export default function SignUp() {
     const checkAdmin = async () => {
       try {
         const response = await fetch('/api/auth/check-admin')
+        if (!response.ok) {
+          // If API fails, allow sign-up attempt anyway (will be validated on submit)
+          console.warn('Failed to check admin status, allowing sign-up attempt')
+          setCanSignUp(true)
+          setChecking(false)
+          return
+        }
+        
         const data = await response.json()
         
         if (data.adminExists) {
@@ -31,7 +39,8 @@ export default function SignUp() {
         }
       } catch (err) {
         console.error('Error checking admin:', err)
-        setError('Failed to check admin status')
+        // On error, allow sign-up attempt (will be validated on submit)
+        setCanSignUp(true)
       } finally {
         setChecking(false)
       }
