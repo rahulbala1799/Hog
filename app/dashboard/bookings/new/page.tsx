@@ -33,6 +33,7 @@ function NewBookingForm() {
     if (formData.sessionDate && formData.sessionTime) {
       checkCapacity()
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [formData.sessionDate, formData.sessionTime])
 
   const fetchSettings = async () => {
