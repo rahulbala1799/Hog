@@ -35,6 +35,7 @@ export default function BookingModal({
     numberOfPeople: 1,
     sessionTime: '' as SessionTime | '',
     bookingType: 'REGULAR' as 'REGULAR' | 'GIFTS' | 'INFLUENCER',
+    totalAmountPaid: '',
   })
 
   useEffect(() => {
@@ -49,6 +50,7 @@ export default function BookingModal({
         numberOfPeople: 1,
         sessionTime: '',
         bookingType: 'REGULAR',
+        totalAmountPaid: '',
       })
       setError('')
     }
@@ -223,10 +225,10 @@ export default function BookingModal({
           </div>
         )}
 
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleSubmit} className="space-y-3">
           {/* Name */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-xs font-medium text-gray-700 mb-1.5">
               Name *
             </label>
             <input
@@ -236,14 +238,14 @@ export default function BookingModal({
               onChange={(e) =>
                 setFormData({ ...formData, studentName: e.target.value })
               }
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none transition text-base"
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none transition text-sm"
               placeholder="Enter name"
             />
           </div>
 
           {/* Phone */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-xs font-medium text-gray-700 mb-1.5">
               Phone Number *
             </label>
             <input
@@ -253,14 +255,14 @@ export default function BookingModal({
               onChange={(e) =>
                 setFormData({ ...formData, studentPhone: e.target.value })
               }
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none transition text-base"
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none transition text-sm"
               placeholder="+91 98765 43210"
             />
           </div>
 
           {/* Email */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-xs font-medium text-gray-700 mb-1.5">
               Email (Optional)
             </label>
             <input
@@ -269,27 +271,27 @@ export default function BookingModal({
               onChange={(e) =>
                 setFormData({ ...formData, studentEmail: e.target.value })
               }
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none transition text-base"
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none transition text-sm"
               placeholder="student@example.com"
             />
           </div>
 
           {/* Number of People */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-xs font-medium text-gray-700 mb-1.5">
               Number of People *
             </label>
-            <div className="flex items-center gap-4">
+            <div className="flex items-center gap-3">
               <button
                 type="button"
                 onClick={() => handlePaxChange(-1)}
                 disabled={formData.numberOfPeople <= 1}
-                className="w-12 h-12 rounded-full bg-gray-200 text-gray-700 font-bold text-xl hover:bg-gray-300 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                className="w-10 h-10 rounded-full bg-gray-200 text-gray-700 font-bold text-lg hover:bg-gray-300 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 -
               </button>
               <div className="flex-1 text-center">
-                <p className="text-3xl font-bold text-gray-900">
+                <p className="text-2xl font-bold text-gray-900">
                   {formData.numberOfPeople}
                 </p>
                 <p className="text-xs text-gray-600">
@@ -304,14 +306,14 @@ export default function BookingModal({
                   formData.numberOfPeople >=
                     (remainingCapacity[formData.sessionTime] || 0)
                 }
-                className="w-12 h-12 rounded-full bg-purple-600 text-white font-bold text-xl hover:bg-purple-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                className="w-10 h-10 rounded-full bg-purple-600 text-white font-bold text-lg hover:bg-purple-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 +
               </button>
             </div>
             {formData.sessionTime && (
               <p
-                className={`text-sm mt-2 text-center ${
+                className={`text-xs mt-1.5 text-center ${
                   (remainingCapacity[formData.sessionTime] || 0) <= 3
                     ? 'text-orange-600'
                     : 'text-gray-600'
@@ -324,17 +326,40 @@ export default function BookingModal({
             )}
           </div>
 
+          {/* Total Amount Paid */}
+          <div>
+            <label className="block text-xs font-medium text-gray-700 mb-1.5">
+              Total Amount Paid (Optional)
+            </label>
+            <input
+              type="number"
+              step="0.01"
+              min="0"
+              value={formData.totalAmountPaid}
+              onChange={(e) =>
+                setFormData({ ...formData, totalAmountPaid: e.target.value })
+              }
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none transition text-sm"
+              placeholder="0.00"
+            />
+            {totalAmount > 0 && formData.numberOfPeople > 0 && (
+              <p className="text-xs text-gray-600 mt-1.5 text-center">
+                ₹{perPersonAmount.toFixed(2)} per person
+              </p>
+            )}
+          </div>
+
           {/* Time Slot */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-xs font-medium text-gray-700 mb-1.5">
               Time Slot *
             </label>
-            <div className="space-y-2">
+            <div className="space-y-1.5">
               <button
                 type="button"
                 onClick={() => setFormData({ ...formData, sessionTime: SessionTime.SESSION_1 })}
                 disabled={availableSession1 === 0}
-                className={`w-full p-3 rounded-lg border-2 transition-all text-left ${
+                className={`w-full p-2.5 rounded-lg border-2 transition-all text-left ${
                   formData.sessionTime === SessionTime.SESSION_1
                     ? 'border-purple-500 bg-purple-50'
                     : availableSession1 === 0
@@ -343,7 +368,7 @@ export default function BookingModal({
                 }`}
               >
                 <div className="flex items-center justify-between">
-                  <span className="font-medium text-gray-900">
+                  <span className="text-sm font-medium text-gray-900">
                     {getTimeSlotLabel(SessionTime.SESSION_1)}
                   </span>
                   {availableSession1 === 0 ? (
@@ -360,7 +385,7 @@ export default function BookingModal({
                 type="button"
                 onClick={() => setFormData({ ...formData, sessionTime: SessionTime.SESSION_2 })}
                 disabled={availableSession2 === 0}
-                className={`w-full p-3 rounded-lg border-2 transition-all text-left ${
+                className={`w-full p-2.5 rounded-lg border-2 transition-all text-left ${
                   formData.sessionTime === SessionTime.SESSION_2
                     ? 'border-purple-500 bg-purple-50'
                     : availableSession2 === 0
@@ -369,7 +394,7 @@ export default function BookingModal({
                 }`}
               >
                 <div className="flex items-center justify-between">
-                  <span className="font-medium text-gray-900">
+                  <span className="text-sm font-medium text-gray-900">
                     {getTimeSlotLabel(SessionTime.SESSION_2)}
                   </span>
                   {availableSession2 === 0 ? (
@@ -386,16 +411,16 @@ export default function BookingModal({
 
           {/* Booking Type */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-xs font-medium text-gray-700 mb-1.5">
               Booking Type
             </label>
-            <div className="flex gap-3">
+            <div className="flex gap-2">
               {(['REGULAR', 'GIFTS', 'INFLUENCER'] as const).map((type) => (
                 <button
                   key={type}
                   type="button"
                   onClick={() => setFormData({ ...formData, bookingType: type })}
-                  className={`flex-1 py-2 px-4 rounded-lg border-2 transition-all ${
+                  className={`flex-1 py-2 px-3 rounded-lg border-2 transition-all text-sm ${
                     formData.bookingType === type
                       ? 'border-purple-500 bg-purple-50 text-purple-700 font-medium'
                       : 'border-gray-200 text-gray-700 hover:bg-gray-50'
@@ -408,18 +433,18 @@ export default function BookingModal({
           </div>
 
           {/* Submit Button */}
-          <div className="flex gap-3 pt-4">
+          <div className="flex gap-2 pt-3">
             <button
               type="button"
               onClick={onClose}
-              className="flex-1 px-4 py-3 bg-gray-100 text-gray-700 rounded-lg font-medium hover:bg-gray-200 transition-colors"
+              className="flex-1 px-3 py-2.5 bg-gray-100 text-gray-700 rounded-lg text-sm font-medium hover:bg-gray-200 transition-colors"
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={loading || !formData.sessionTime}
-              className="flex-1 px-4 py-3 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-lg font-medium hover:from-purple-700 hover:to-pink-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              className="flex-1 px-3 py-2.5 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-lg text-sm font-medium hover:from-purple-700 hover:to-pink-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {loading ? 'Creating...' : 'Create Booking'}
             </button>

@@ -93,6 +93,7 @@ model Booking {
   sessionDate    DateTime      // Date of the session
   sessionTime    SessionTime   // SESSION_1 or SESSION_2
   bookingType    BookingType   @default(REGULAR)
+  totalAmountPaid Float?        // Total amount paid (optional)
   status         BookingStatus @default(PENDING)
   notes          String?
   createdBy      User          @relation(fields: [createdById], references: [id], onDelete: Restrict)

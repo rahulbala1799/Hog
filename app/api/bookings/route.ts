@@ -106,6 +106,7 @@ export async function POST(request: Request) {
       sessionDate,
       sessionTime,
       bookingType,
+      totalAmountPaid,
       status,
       notes,
     } = body
@@ -196,6 +197,7 @@ export async function POST(request: Request) {
         sessionDate: new Date(sessionDate),
         sessionTime: sessionTime as SessionTime,
         bookingType: validBookingType,
+        totalAmountPaid: totalAmountPaid ? parseFloat(totalAmountPaid.toString()) : null,
         status: (status as BookingStatus) || BookingStatus.PENDING,
         notes: notes || null,
         createdById: currentUser.id,
