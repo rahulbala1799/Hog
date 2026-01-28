@@ -311,16 +311,16 @@ export default function BookingModal({
                 type="button"
                 onClick={() => handlePaxChange(1)}
                 disabled={
-                  !formData.sessionTime ||
-                  formData.numberOfPeople >=
-                    (remainingCapacity[formData.sessionTime] || 0)
+                  formData.sessionTime
+                    ? formData.numberOfPeople >= (remainingCapacity[formData.sessionTime] || 0)
+                    : formData.numberOfPeople >= maxCapacity
                 }
                 className="w-10 h-10 rounded-full bg-purple-600 text-white font-bold text-lg hover:bg-purple-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 +
               </button>
             </div>
-            {formData.sessionTime && (
+            {formData.sessionTime ? (
               <p
                 className={`text-xs mt-1.5 text-center ${
                   (remainingCapacity[formData.sessionTime] || 0) <= 3
@@ -331,6 +331,10 @@ export default function BookingModal({
                 {(remainingCapacity[formData.sessionTime] || 0) > 0
                   ? `${remainingCapacity[formData.sessionTime] || 0} spot${(remainingCapacity[formData.sessionTime] || 0) !== 1 ? 's' : ''} remaining`
                   : 'Session is full'}
+              </p>
+            ) : (
+              <p className="text-xs mt-1.5 text-center text-gray-600">
+                Select a time slot to see availability
               </p>
             )}
           </div>
