@@ -14,11 +14,10 @@
   },
   "dependencies": {
     "@prisma/client": "^5.7.1",
+    "better-auth": "^1.4.17",
     "next": "^14.0.4",
-    "next-auth": "^5.0.0-beta.15",
     "react": "^18.2.0",
-    "react-dom": "^18.2.0",
-    "bcryptjs": "^2.4.3"
+    "react-dom": "^18.2.0"
   },
   "devDependencies": {
     "@types/bcryptjs": "^2.4.6",
