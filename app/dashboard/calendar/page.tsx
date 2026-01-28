@@ -277,71 +277,136 @@ export default function CalendarPage() {
     }
 
     return (
-      <div className="overflow-x-auto">
-        <div className="flex gap-2 min-w-max pb-2">
-          {days.map((day, index) => {
-            const dateStr = formatDate(day)
-            const capacity = capacities.find((c) => c.date === dateStr)
-            const isToday = formatDate(new Date()) === dateStr
+      <div className="space-y-3">
+        {days.map((day, index) => {
+          const dateStr = formatDate(day)
+          const capacity = capacities.find((c) => c.date === dateStr)
+          const isToday = formatDate(new Date()) === dateStr
+          const isPast = day < new Date(new Date().setHours(0, 0, 0, 0))
+          
+          const session1Capacity = capacity?.session1 || { booked: 0, available: maxCapacity, percentage: 0 }
+          const session2Capacity = capacity?.session2 || { booked: 0, available: maxCapacity, percentage: 0 }
 
-            return (
-              <div
-                key={index}
-                onClick={() => setCurrentDate(day)}
-                className={`flex-shrink-0 w-24 p-3 rounded-xl border-2 cursor-pointer transition-all ${
-                  isToday ? 'border-purple-500 bg-purple-50' : 'border-gray-200 bg-white hover:bg-gray-50'
-                }`}
-              >
-                <div className="text-center">
-                  <p className="text-xs text-gray-600 font-medium">
-                    {day.toLocaleDateString('en-US', { weekday: 'short' })}
-                  </p>
-                  <p className="text-2xl font-bold text-gray-900 my-1">{day.getDate()}</p>
-                  
-                  {/* Session 1 */}
-                  <div className="flex items-center justify-center gap-1 mt-2">
-                    <div
-                      className={`w-3 h-3 rounded-full ${
-                        !capacity || capacity.session1.percentage === 0
-                          ? 'bg-gray-300'
-                          : capacity.session1.percentage <= 33
-                          ? 'bg-green-500'
-                          : capacity.session1.percentage <= 66
-                          ? 'bg-blue-500'
-                          : capacity.session1.percentage < 100
-                          ? 'bg-orange-500'
-                          : 'bg-red-500'
-                      }`}
-                    />
-                    <span className="text-xs text-gray-700">
-                      {capacity?.session1.booked || 0}
-                    </span>
+          return (
+            <div
+              key={index}
+              className={`p-4 rounded-2xl border-2 transition-all ${
+                isToday 
+                  ? 'border-purple-500 bg-purple-50' 
+                  : isPast 
+                  ? 'border-gray-200 bg-gray-50 opacity-60' 
+                  : 'border-gray-200 bg-white'
+              }`}
+            >
+              {/* Day Header */}
+              <div className="flex items-center justify-between mb-3">
+                <div className="flex items-center gap-3">
+                  <div className="text-center">
+                    <p className={`text-2xl font-bold ${isToday ? 'text-purple-700' : 'text-gray-900'}`}>
+                      {day.getDate()}
+                    </p>
                   </div>
-                  
-                  {/* Session 2 */}
-                  <div className="flex items-center justify-center gap-1 mt-1">
-                    <div
-                      className={`w-3 h-3 rounded-full ${
-                        !capacity || capacity.session2.percentage === 0
-                          ? 'bg-gray-300'
-                          : capacity.session2.percentage <= 33
-                          ? 'bg-green-500'
-                          : capacity.session2.percentage <= 66
-                          ? 'bg-blue-500'
-                          : capacity.session2.percentage < 100
-                          ? 'bg-orange-500'
-                          : 'bg-red-500'
-                      }`}
-                    />
-                    <span className="text-xs text-gray-700">
-                      {capacity?.session2.booked || 0}
-                    </span>
+                  <div>
+                    <p className={`text-sm font-semibold ${isToday ? 'text-purple-700' : 'text-gray-900'}`}>
+                      {day.toLocaleDateString('en-US', { weekday: 'long' })}
+                    </p>
+                    <p className="text-xs text-gray-600">
+                      {day.toLocaleDateString('en-US', { month: 'short', year: 'numeric' })}
+                    </p>
+                  </div>
+                </div>
+                {isToday && (
+                  <span className="px-2 py-1 bg-purple-600 text-white text-xs font-bold rounded-full">
+                    TODAY
+                  </span>
+                )}
+              </div>
+
+              {/* Sessions */}
+              <div className="space-y-2">
+                {/* Session 1 */}
+                <div
+                  onClick={() => router.push(`/dashboard/calendar/session?date=${dateStr}&session=${SessionTime.SESSION_1}`)}
+                  className={`p-3 rounded-xl cursor-pointer transition-all ${
+                    session1Capacity.percentage === 100
+                      ? 'bg-red-50 border-2 border-red-200'
+                      : 'bg-gray-50 border-2 border-gray-200 hover:bg-gray-100'
+                  }`}
+                >
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <div
+                        className={`w-3 h-3 rounded-full ${
+                          session1Capacity.percentage === 0
+                            ? 'bg-gray-300'
+                            : session1Capacity.percentage <= 33
+                            ? 'bg-green-500'
+                            : session1Capacity.percentage <= 66
+                            ? 'bg-blue-500'
+                            : session1Capacity.percentage < 100
+                            ? 'bg-orange-500'
+                            : 'bg-red-500'
+                        }`}
+                      />
+                      <div>
+                        <p className="text-sm font-medium text-gray-900">Session 1</p>
+                        <p className="text-xs text-gray-600">7:00 PM - 8:00 PM</p>
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <p className={`text-lg font-bold ${getCapacityColor(session1Capacity.percentage)}`}>
+                        {session1Capacity.booked}/{maxCapacity}
+                      </p>
+                      {session1Capacity.percentage === 100 && (
+                        <p className="text-xs text-red-600 font-medium">FULL</p>
+                      )}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Session 2 */}
+                <div
+                  onClick={() => router.push(`/dashboard/calendar/session?date=${dateStr}&session=${SessionTime.SESSION_2}`)}
+                  className={`p-3 rounded-xl cursor-pointer transition-all ${
+                    session2Capacity.percentage === 100
+                      ? 'bg-red-50 border-2 border-red-200'
+                      : 'bg-gray-50 border-2 border-gray-200 hover:bg-gray-100'
+                  }`}
+                >
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <div
+                        className={`w-3 h-3 rounded-full ${
+                          session2Capacity.percentage === 0
+                            ? 'bg-gray-300'
+                            : session2Capacity.percentage <= 33
+                            ? 'bg-green-500'
+                            : session2Capacity.percentage <= 66
+                            ? 'bg-blue-500'
+                            : session2Capacity.percentage < 100
+                            ? 'bg-orange-500'
+                            : 'bg-red-500'
+                        }`}
+                      />
+                      <div>
+                        <p className="text-sm font-medium text-gray-900">Session 2</p>
+                        <p className="text-xs text-gray-600">9:00 PM - 10:00 PM</p>
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <p className={`text-lg font-bold ${getCapacityColor(session2Capacity.percentage)}`}>
+                        {session2Capacity.booked}/{maxCapacity}
+                      </p>
+                      {session2Capacity.percentage === 100 && (
+                        <p className="text-xs text-red-600 font-medium">FULL</p>
+                      )}
+                    </div>
                   </div>
                 </div>
               </div>
-            )
-          })}
-        </div>
+            </div>
+          )
+        })}
       </div>
     )
   }
