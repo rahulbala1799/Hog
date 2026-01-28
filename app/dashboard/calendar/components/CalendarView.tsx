@@ -1,15 +1,72 @@
 'use client'
 
 import { useRouter } from 'next/navigation'
-import { useEffect } from 'react'
+import { useState, useEffect } from 'react'
+import { SessionTime, BookingStatus } from '@prisma/client'
+import BookingModal from './BookingModal'
 
-export default function CalendarPage() {
+type ViewMode = 'daily' | 'weekly' | 'monthly'
+
+interface Booking {
+  id: string
+  studentName: string
+  studentEmail: string | null
+  studentPhone: string | null
+  numberOfPeople: number
+  sessionDate: string
+  sessionTime: SessionTime
+  status: BookingStatus
+  notes: string | null
+  createdAt: string
+  createdBy: {
+    id: string
+    name: string
+    email: string
+  }
+}
+
+interface SessionCapacity {
+  date: string
+  maxCapacity: number
+  session1: {
+    booked: number
+    available: number
+    percentage: number
+  }
+  session2: {
+    booked: number
+    available: number
+    percentage: number
+  }
+}
+
+interface CalendarViewProps {
+  viewMode: ViewMode
+}
+
+function CalendarViewContent({ viewMode }: CalendarViewProps) {
   const router = useRouter()
+  const searchParams = useSearchParams()
+  const dateParam = searchParams.get('date')
+  const [currentDate, setCurrentDate] = useState(
+    dateParam ? new Date(dateParam) : new Date()
+  )
+  const [bookings, setBookings] = useState<Booking[]>([])
+  const [capacities, setCapacities] = useState<SessionCapacity[]>([])
+  const [maxCapacity, setMaxCapacity] = useState(10)
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState('')
+  const [showBookingModal, setShowBookingModal] = useState(false)
 
   useEffect(() => {
-    // Redirect to daily view by default
-    router.replace('/dashboard/calendar/daily')
-  }, [router])
+    if (dateParam) {
+      setCurrentDate(new Date(dateParam))
+    }
+  }, [dateParam])
+
+  useEffect(() => {
+    fetchData()
+  }, [currentDate, viewMode])
 
   const fetchData = async () => {
     setLoading(true)
@@ -101,23 +158,23 @@ export default function CalendarPage() {
     if (percentage <= 33) return 'bg-green-50 border-green-200'
     if (percentage <= 66) return 'bg-blue-50 border-blue-200'
     if (percentage < 100) return 'bg-orange-50 border-orange-200'
-    return 'bg-red-50 border-red-300'
+    return 'bg-red-50 border-red-200'
   }
 
   const formatDateDisplay = (date: Date): string => {
     return date.toLocaleDateString('en-US', {
       weekday: 'long',
-      year: 'numeric',
       month: 'long',
       day: 'numeric',
+      year: 'numeric',
     })
   }
 
-  const getSessionBookings = (sessionTime: SessionTime) => {
+  const getSessionBookings = (sessionTime: SessionTime): Booking[] => {
     const dateStr = formatDate(currentDate)
     return bookings.filter(
       (b) =>
-        b.sessionDate.split('T')[0] === dateStr &&
+        formatDate(new Date(b.sessionDate)) === dateStr &&
         b.sessionTime === sessionTime &&
         b.status !== BookingStatus.CANCELLED
     )
@@ -125,13 +182,13 @@ export default function CalendarPage() {
 
   const getSessionCapacity = (sessionTime: SessionTime) => {
     const dateStr = formatDate(currentDate)
-    const capacity = capacities.find((c) => c.date === dateStr)
-    
-    if (!capacity) {
-      return { booked: 0, available: maxCapacity, percentage: 0 }
+    const dayCapacity = capacities.find((c) => c.date === dateStr) || {
+      date: dateStr,
+      maxCapacity,
+      session1: { booked: 0, available: maxCapacity, percentage: 0 },
+      session2: { booked: 0, available: maxCapacity, percentage: 0 },
     }
-    
-    return sessionTime === SessionTime.SESSION_1 ? capacity.session1 : capacity.session2
+    return sessionTime === SessionTime.SESSION_1 ? dayCapacity.session1 : dayCapacity.session2
   }
 
   const renderDailyView = () => {
@@ -370,19 +427,13 @@ export default function CalendarPage() {
   const renderMonthlyView = () => {
     const year = currentDate.getFullYear()
     const month = currentDate.getMonth()
-    const firstDay = new Date(year, month, 1)
-    const lastDay = new Date(year, month + 1, 0)
-    const startDay = firstDay.getDay()
-    const daysInMonth = lastDay.getDate()
+    const firstDay = new Date(year, month, 1).getDay()
+    const daysInMonth = new Date(year, month + 1, 0).getDate()
 
-    const days = []
-    
-    // Empty cells for days before month starts
-    for (let i = 0; i < startDay; i++) {
+    const days: (number | null)[] = []
+    for (let i = 0; i < firstDay; i++) {
       days.push(null)
     }
-    
-    // Days of the month
     for (let i = 1; i <= daysInMonth; i++) {
       days.push(i)
     }
@@ -415,7 +466,7 @@ export default function CalendarPage() {
                 key={index}
                 onClick={() => {
                   setCurrentDate(date)
-                  setViewMode('daily')
+                  router.push(`/dashboard/calendar/daily?date=${dateStr}`)
                 }}
                 className={`aspect-square p-1 rounded-lg border cursor-pointer transition-all ${
                   isToday
@@ -499,7 +550,7 @@ export default function CalendarPage() {
             {(['daily', 'weekly', 'monthly'] as ViewMode[]).map((mode) => (
               <button
                 key={mode}
-                onClick={() => setViewMode(mode)}
+                onClick={() => router.push(`/dashboard/calendar/${mode}`)}
                 className={`flex-1 py-2 px-4 rounded-lg text-sm font-medium transition-colors ${
                   viewMode === mode
                     ? 'bg-purple-600 text-white'
@@ -586,21 +637,10 @@ export default function CalendarPage() {
       {/* Floating Action Button */}
       <button
         onClick={() => setShowBookingModal(true)}
-        className="fixed bottom-6 right-6 w-14 h-14 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-full shadow-lg flex items-center justify-center hover:shadow-xl transition-all transform hover:scale-110"
+        className="fixed bottom-6 right-6 w-14 h-14 rounded-full bg-gradient-to-r from-purple-600 to-pink-600 text-white shadow-lg flex items-center justify-center text-3xl font-bold hover:from-purple-700 hover:to-pink-700 transition-all transform hover:scale-105"
+        title="Add New Booking"
       >
-        <svg
-          className="w-6 h-6"
-          fill="none"
-          stroke="currentColor"
-          viewBox="0 0 24 24"
-        >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth={2}
-            d="M12 4v16m8-8H4"
-          />
-        </svg>
+        +
       </button>
 
       {/* Booking Modal */}
@@ -610,8 +650,24 @@ export default function CalendarPage() {
         selectedDate={currentDate}
         onSuccess={() => {
           fetchData()
+          setShowBookingModal(false)
         }}
       />
     </div>
+  )
+}
+
+export default function CalendarView({ viewMode }: CalendarViewProps) {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600 mx-auto"></div>
+          <p className="mt-4 text-gray-600">Loading calendar...</p>
+        </div>
+      </div>
+    }>
+      <CalendarViewContent viewMode={viewMode} />
+    </Suspense>
   )
 }
