@@ -13,6 +13,10 @@ export const auth = betterAuth({
   emailAndPassword: {
     enabled: true,
     requireEmailVerification: false,
+    // Disable public sign-ups - only allow login for existing users
+    signUp: {
+      enabled: false, // Disable sign-up endpoint
+    },
   },
   session: {
     expiresIn: 60 * 60 * 24 * 30, // 30 days
