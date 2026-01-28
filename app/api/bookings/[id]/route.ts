@@ -74,6 +74,7 @@ export async function PUT(
       numberOfPeople,
       sessionDate,
       sessionTime,
+      totalAmountPaid,
       status,
       notes,
     } = body
