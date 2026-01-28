@@ -58,6 +58,14 @@ export default function BookingModal({
     }
   }, [isOpen, selectedDate])
 
+  // Refetch capacity and settings when date changes
+  useEffect(() => {
+    if (isOpen && formData.sessionDate) {
+      fetchCapacity()
+      fetchSettings()
+    }
+  }, [formData.sessionDate])
+
   const fetchSettings = async () => {
     try {
       const response = await fetch('/api/settings')
