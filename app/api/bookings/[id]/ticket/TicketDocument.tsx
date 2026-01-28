@@ -149,7 +149,8 @@ const TicketDocument = (data: TicketData) => (
 
         {/* QR Code */}
         <View style={styles.qrContainer}>
-          <Image src={data.qrCodeDataUrl} style={styles.qrCode} alt="QR Code for houseofglow.in" />
+          {/* eslint-disable-next-line jsx-a11y/alt-text */}
+          <Image src={data.qrCodeDataUrl} style={styles.qrCode} />
           <Text style={styles.qrLabel}>Scan to visit houseofglow.in</Text>
         </View>
       </View>
