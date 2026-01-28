@@ -3,6 +3,8 @@ import { prisma } from '@/lib/db'
 import { requireAdmin } from '@/lib/auth-helpers'
 import { Currency } from '@prisma/client'
 
+export const runtime = 'nodejs'
+
 export async function GET() {
   try {
     // Get or create settings
