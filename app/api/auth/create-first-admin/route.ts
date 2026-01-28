@@ -54,21 +54,12 @@ export async function POST(request: Request) {
     const hashedPassword = await bcrypt.hash(password, 10)
 
     // Create the first admin user in our database
-    // User will authenticate through our local Better Auth instance
     const admin = await prisma.user.create({
       data: {
         email,
         password: hashedPassword,
         name,
         role: Role.ADMIN,
-        // Create Account record for Better Auth credential authentication
-        accounts: {
-          create: {
-            accountId: email, // Use email as accountId for credential provider
-            providerId: 'credential', // Better Auth uses 'credential' for email/password
-            password: hashedPassword, // Store password in Account model
-          },
-        },
       },
     })
 

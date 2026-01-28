@@ -1,25 +1,47 @@
 'use client'
 
-import { useSession, signOut } from '@/lib/auth/client'
 import { useRouter } from 'next/navigation'
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
+
+interface User {
+  id: string
+  email: string
+  name: string
+  role: string
+}
 
 export default function Dashboard() {
-  const { data: session, isPending } = useSession()
   const router = useRouter()
+  const [user, setUser] = useState<User | null>(null)
+  const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    if (!isPending && !session) {
-      router.push('/')
+    const fetchUser = async () => {
+      try {
+        const response = await fetch('/api/auth/me')
+        if (!response.ok) {
+          router.push('/')
+          return
+        }
+        const data = await response.json()
+        setUser(data.user)
+      } catch (error) {
+        router.push('/')
+      } finally {
+        setLoading(false)
+      }
     }
-  }, [session, isPending, router])
+
+    fetchUser()
+  }, [router])
 
   const handleSignOut = async () => {
-    await signOut()
+    await fetch('/api/auth/logout', { method: 'POST' })
     router.push('/')
+    router.refresh()
   }
 
-  if (isPending) {
+  if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
@@ -30,7 +52,7 @@ export default function Dashboard() {
     )
   }
 
-  if (!session) {
+  if (!user) {
     return null
   }
 
@@ -43,7 +65,7 @@ export default function Dashboard() {
               <h1 className="text-3xl font-bold bg-gradient-to-r from-purple-600 via-pink-600 to-orange-600 bg-clip-text text-transparent">
                 Dashboard
               </h1>
-              <p className="text-gray-600 mt-2">Welcome back, {session.user?.name || session.user?.email}!</p>
+              <p className="text-gray-600 mt-2">Welcome back, {user.name || user.email}!</p>
             </div>
             <button
               onClick={handleSignOut}
@@ -56,15 +78,16 @@ export default function Dashboard() {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             <div className="bg-gradient-to-br from-purple-100 to-purple-200 rounded-lg p-6">
               <h2 className="text-xl font-semibold text-purple-900 mb-2">User Info</h2>
-              <p className="text-purple-700">Email: {session.user?.email}</p>
-              {session.user?.name && (
-                <p className="text-purple-700">Name: {session.user.name}</p>
+              <p className="text-purple-700">Email: {user.email}</p>
+              {user.name && (
+                <p className="text-purple-700">Name: {user.name}</p>
               )}
+              <p className="text-purple-700">Role: {user.role}</p>
             </div>
 
             <div className="bg-gradient-to-br from-pink-100 to-pink-200 rounded-lg p-6">
-              <h2 className="text-xl font-semibold text-pink-900 mb-2">Session</h2>
-              <p className="text-pink-700">Session ID: {session.session?.id?.substring(0, 8)}...</p>
+              <h2 className="text-xl font-semibold text-pink-900 mb-2">User ID</h2>
+              <p className="text-pink-700">ID: {user.id.substring(0, 8)}...</p>
             </div>
 
             <div className="bg-gradient-to-br from-orange-100 to-orange-200 rounded-lg p-6">

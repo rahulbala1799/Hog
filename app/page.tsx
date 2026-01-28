@@ -1,7 +1,6 @@
 'use client'
 
 import { useState, useEffect, Suspense } from 'react'
-import { signIn } from '@/lib/auth/client'
 import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 
@@ -53,22 +52,28 @@ function LoginForm() {
     setLoading(true)
 
     try {
-      const result = await signIn.email({
-        email,
-        password,
+      const response = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          email,
+          password,
+        }),
       })
 
-      if (result.error) {
-        setError(result.error.message || 'Invalid email or password')
+      const data = await response.json()
+
+      if (!response.ok) {
+        setError(data.error || 'Invalid email or password')
         setLoading(false)
         return
       }
 
-      if (result.data) {
-        // Redirect to dashboard after successful login
-        router.push('/dashboard')
-        router.refresh()
-      }
+      // Redirect to dashboard after successful login
+      router.push('/dashboard')
+      router.refresh()
     } catch (err) {
       setError('An error occurred. Please try again.')
       setLoading(false)

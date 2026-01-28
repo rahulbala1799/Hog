@@ -9,9 +9,8 @@ export async function middleware(request: NextRequest) {
     return NextResponse.next()
   }
 
-  // Check for session cookie (Better Auth uses 'better-auth.session_token')
-  // When using Neon Auth, the cookie name might be different, but Better Auth standardizes it
-  const sessionCookie = request.cookies.get('better-auth.session_token')
+  // Check for session cookie
+  const sessionCookie = request.cookies.get('session_token')
   
   // If no session, redirect to login
   if (!sessionCookie) {
