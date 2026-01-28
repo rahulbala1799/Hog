@@ -15,20 +15,94 @@ enum Role {
   STAFF
 }
 
+enum BookingStatus {
+  PENDING
+  CONFIRMED
+  COMPLETED
+  CANCELLED
+}
+
+enum ExpenseCategory {
+  ART_SUPPLIES
+  RENT
+  MARKETING
+  UTILITIES
+  STAFF
+  EQUIPMENT
+  OTHER
+}
+
 model User {
-  id        String   @id @default(uuid())
-  email     String   @unique
+  id        String    @id @default(uuid())
+  email     String    @unique
   password  String
   name      String
   role      Role
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
 
-  // Better Auth relations
+  // Better Auth relations (unused but kept for backward compatibility)
   accounts  Account[]
   sessions  Session[]
+  
+  // Business relations
+  bookings  Booking[]
+  expenses  Expense[]
 
   @@map("users")
+}
+
+model ClassType {
+  id          String    @id @default(uuid())
+  name        String    @unique
+  description String?
+  duration    Int       // in minutes
+  price       Float
+  color       String    @default("#8B5CF6") // hex color for calendar
+  active      Boolean   @default(true)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  
+  bookings    Booking[]
+
+  @@map("class_types")
+}
+
+model Booking {
+  id           String        @id @default(uuid())
+  studentName  String
+  studentEmail String?
+  studentPhone String?
+  classDate    DateTime
+  classType    ClassType     @relation(fields: [classTypeId], references: [id], onDelete: Restrict)
+  classTypeId  String
+  status       BookingStatus @default(PENDING)
+  notes        String?
+  createdBy    User          @relation(fields: [createdById], references: [id], onDelete: Restrict)
+  createdById  String
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+
+  @@index([classDate])
+  @@index([status])
+  @@map("bookings")
+}
+
+model Expense {
+  id          String          @id @default(uuid())
+  amount      Float
+  category    ExpenseCategory
+  description String
+  date        DateTime
+  receiptUrl  String?         // URL to uploaded receipt image
+  createdBy   User            @relation(fields: [createdById], references: [id], onDelete: Restrict)
+  createdById String
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
+
+  @@index([date])
+  @@index([category])
+  @@map("expenses")
 }
 
 // Better Auth required models

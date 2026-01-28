@@ -2,6 +2,7 @@
 
 import { useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react'
+import Link from 'next/link'
 
 interface User {
   id: string
@@ -43,9 +44,9 @@ export default function Dashboard() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600 mx-auto"></div>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#8B7355] mx-auto"></div>
           <p className="mt-4 text-gray-600">Loading...</p>
         </div>
       </div>
@@ -56,47 +57,136 @@ export default function Dashboard() {
     return null
   }
 
+  const sections = [
+    {
+      title: 'Bookings',
+      icon: '📅',
+      description: 'Manage class bookings',
+      href: '/dashboard/bookings',
+      color: 'from-blue-50 to-blue-100',
+      badge: '0',
+    },
+    {
+      title: 'Calendar',
+      icon: '🗓️',
+      description: 'View booking schedule',
+      href: '/dashboard/calendar',
+      color: 'from-purple-50 to-purple-100',
+    },
+    {
+      title: 'Expenses',
+      icon: '💰',
+      description: 'Track business expenses',
+      href: '/dashboard/expenses',
+      color: 'from-orange-50 to-orange-100',
+      badge: '₹0',
+    },
+    {
+      title: 'Reports',
+      icon: '📊',
+      description: 'View analytics & insights',
+      href: '/dashboard/reports',
+      color: 'from-green-50 to-green-100',
+    },
+    {
+      title: 'Settings',
+      icon: '⚙️',
+      description: 'Manage app settings',
+      href: '/dashboard/settings',
+      color: 'from-gray-50 to-gray-100',
+    },
+  ]
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-50 via-pink-50 to-orange-50">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <div className="bg-white rounded-2xl shadow-xl p-8">
-          <div className="flex justify-between items-center mb-8">
+    <div className="min-h-screen bg-gray-50">
+      {/* Header */}
+      <header className="bg-white border-b border-gray-200 sticky top-0 z-10">
+        <div className="px-4 py-4">
+          <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-3xl font-bold bg-gradient-to-r from-purple-600 via-pink-600 to-orange-600 bg-clip-text text-transparent">
-                Dashboard
-              </h1>
-              <p className="text-gray-600 mt-2">Welcome back, {user.name || user.email}!</p>
+              <h1 className="text-xl font-bold text-[#8B7355]">House of Glow</h1>
+              <p className="text-xs text-gray-600 mt-0.5">Welcome, {user.name}</p>
             </div>
             <button
               onClick={handleSignOut}
-              className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition"
+              className="flex items-center justify-center w-10 h-10 rounded-full bg-gray-100 hover:bg-gray-200 transition-colors"
+              aria-label="Sign out"
             >
-              Sign Out
+              <span className="text-lg">👤</span>
             </button>
           </div>
+        </div>
+      </header>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            <div className="bg-gradient-to-br from-purple-100 to-purple-200 rounded-lg p-6">
-              <h2 className="text-xl font-semibold text-purple-900 mb-2">User Info</h2>
-              <p className="text-purple-700">Email: {user.email}</p>
-              {user.name && (
-                <p className="text-purple-700">Name: {user.name}</p>
-              )}
-              <p className="text-purple-700">Role: {user.role}</p>
-            </div>
-
-            <div className="bg-gradient-to-br from-pink-100 to-pink-200 rounded-lg p-6">
-              <h2 className="text-xl font-semibold text-pink-900 mb-2">User ID</h2>
-              <p className="text-pink-700">ID: {user.id.substring(0, 8)}...</p>
-            </div>
-
-            <div className="bg-gradient-to-br from-orange-100 to-orange-200 rounded-lg p-6">
-              <h2 className="text-xl font-semibold text-orange-900 mb-2">Status</h2>
-              <p className="text-orange-700">Authenticated ✓</p>
-            </div>
+      {/* Main Content */}
+      <main className="px-4 py-6 pb-safe">
+        {/* Quick Stats */}
+        <div className="grid grid-cols-2 gap-3 mb-6">
+          <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100">
+            <div className="text-2xl font-bold text-gray-900">0</div>
+            <div className="text-xs text-gray-600 mt-1">Today&apos;s Bookings</div>
+          </div>
+          <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100">
+            <div className="text-2xl font-bold text-green-600">₹0</div>
+            <div className="text-xs text-gray-600 mt-1">This Month</div>
           </div>
         </div>
-      </div>
+
+        {/* Main Action Cards */}
+        <div className="space-y-3">
+          {sections.map((section) => (
+            <Link
+              key={section.href}
+              href={section.href}
+              className="block"
+            >
+              <div className={`card-interactive bg-gradient-to-br ${section.color} p-5`}>
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-4">
+                    <div className="text-3xl">{section.icon}</div>
+                    <div>
+                      <h2 className="text-lg font-semibold text-gray-900">
+                        {section.title}
+                      </h2>
+                      <p className="text-sm text-gray-600 mt-0.5">
+                        {section.description}
+                      </p>
+                    </div>
+                  </div>
+                  <div className="flex flex-col items-end gap-2">
+                    {section.badge && (
+                      <span className="text-xs font-medium text-gray-700 bg-white/60 px-2 py-1 rounded-full">
+                        {section.badge}
+                      </span>
+                    )}
+                    <svg
+                      className="w-5 h-5 text-gray-400"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M9 5l7 7-7 7"
+                      />
+                    </svg>
+                  </div>
+                </div>
+              </div>
+            </Link>
+          ))}
+        </div>
+
+        {/* Quick Add Button - Floating */}
+        <Link
+          href="/dashboard/bookings/new"
+          className="fixed bottom-20 right-4 w-14 h-14 bg-[#8B7355] rounded-full shadow-lg flex items-center justify-center text-white text-2xl active:scale-95 transition-transform z-50"
+        >
+          +
+        </Link>
+      </main>
     </div>
   )
 }
