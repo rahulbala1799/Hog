@@ -67,7 +67,8 @@ export default function BookingModal({
         setMaxCapacity(maxPersons)
         
         // Get class timings for the selected day
-        const dayOfWeek = selectedDate.getDay()
+        const dateToUse = formData.sessionDate ? new Date(formData.sessionDate) : selectedDate
+        const dayOfWeek = dateToUse.getDay()
         const timingsForDay = data.settings.classTimings.filter(
           (t: ClassTiming) => t.dayOfWeek === dayOfWeek
         )
