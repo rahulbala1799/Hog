@@ -307,10 +307,20 @@ function SessionDetailContent() {
                             </p>
                           )}
 
-                          <div className="flex items-center gap-4 mt-2">
+                          <div className="flex flex-wrap items-center gap-4 mt-2">
                             <p className="text-sm text-gray-700">
                               <span className="font-medium">PAX:</span> {booking.numberOfPeople} {booking.numberOfPeople === 1 ? 'person' : 'people'}
                             </p>
+                            {booking.totalAmountPaid && (
+                              <p className="text-sm text-gray-700">
+                                <span className="font-medium">Amount:</span> ₹{booking.totalAmountPaid.toFixed(2)}
+                                {booking.numberOfPeople > 1 && (
+                                  <span className="text-xs text-gray-500 ml-1">
+                                    (₹{(booking.totalAmountPaid / booking.numberOfPeople).toFixed(2)}/person)
+                                  </span>
+                                )}
+                              </p>
+                            )}
                             <p className="text-xs text-gray-500">
                               Booked: {formatCreatedDate(booking.createdAt)}
                             </p>
