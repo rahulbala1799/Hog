@@ -196,8 +196,10 @@ export default function BookingModal({
   const availableSession2 = remainingCapacity.SESSION_2 ?? maxCapacity
 
   // Calculate per person amount
-  const totalAmount = formData.totalAmountPaid ? parseFloat(formData.totalAmountPaid) : 0
-  const perPersonAmount = formData.numberOfPeople > 0 && totalAmount > 0
+  const totalAmount = formData.totalAmountPaid && formData.totalAmountPaid !== '' 
+    ? parseFloat(formData.totalAmountPaid) 
+    : 0
+  const perPersonAmount = formData.numberOfPeople > 0 && totalAmount > 0 && !isNaN(totalAmount)
     ? totalAmount / formData.numberOfPeople
     : 0
 
@@ -349,7 +351,7 @@ export default function BookingModal({
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none transition text-sm"
               placeholder="0.00"
             />
-            {totalAmount > 0 && formData.numberOfPeople > 0 && (
+            {totalAmount > 0 && formData.numberOfPeople > 0 && !isNaN(perPersonAmount) && (
               <p className="text-xs text-gray-600 mt-1.5 text-center">
                 ₹{perPersonAmount.toFixed(2)} per person
               </p>
