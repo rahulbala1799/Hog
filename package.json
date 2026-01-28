@@ -12,7 +12,8 @@
     "db:seed": "tsx prisma/seed.ts",
     "db:studio": "prisma studio",
     "db:check-users": "tsx scripts/check-users.ts",
-    "db:delete-admin": "tsx scripts/delete-admin.ts"
+    "db:delete-admin": "tsx scripts/delete-admin.ts",
+    "db:migrate-users": "tsx scripts/migrate-users-to-accounts.ts"
   },
   "dependencies": {
     "@prisma/client": "^5.7.1",

@@ -61,6 +61,14 @@ export async function POST(request: Request) {
         password: hashedPassword,
         name,
         role: Role.ADMIN,
+        // Create Account record for Better Auth credential authentication
+        accounts: {
+          create: {
+            accountId: email, // Use email as accountId for credential provider
+            providerId: 'credential', // Better Auth uses 'credential' for email/password
+            password: hashedPassword, // Store password in Account model
+          },
+        },
       },
     })
 
