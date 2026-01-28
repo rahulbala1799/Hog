@@ -38,6 +38,9 @@ async function main() {
 
   console.log('✅ Created staff user:', staff.email)
 
+  // Create user from Neon
+  const neonUser = await prisma.user.upsert({
+
   console.log('🎉 Seed completed!')
 }
 
