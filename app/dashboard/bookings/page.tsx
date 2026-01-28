@@ -86,17 +86,20 @@ export default function BookingsPage() {
     : bookings.filter(b => b.status === filter.toUpperCase())
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <header className="bg-white border-b border-gray-200 sticky top-0 z-10">
-        <div className="px-4 py-4">
-          <div className="flex items-center gap-3">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-cyan-50 to-purple-50">
+      {/* Artistic Header */}
+      <header className="relative overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-r from-blue-600 via-cyan-600 to-purple-600"></div>
+        <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxnIGZpbGw9IiNmZmZmZmYiIGZpbGwtb3BhY2l0eT0iMC4xIj48cGF0aCBkPSJNMzYgMzBoLTJ2LTJoMnYyem0tNiAwaDJ2LTJoLTJ2MnoiLz48L2c+PC9nPjwvc3ZnPg==')] opacity-30"></div>
+        
+        <div className="relative px-4 py-5">
+          <div className="flex items-center gap-3 mb-4">
             <button
               onClick={() => router.back()}
-              className="flex items-center justify-center w-10 h-10 rounded-full hover:bg-gray-100 transition-colors"
+              className="flex items-center justify-center w-11 h-11 rounded-xl bg-white/20 backdrop-blur-sm hover:bg-white/30 transition-all border border-white/30"
             >
               <svg
-                className="w-6 h-6 text-gray-700"
+                className="w-6 h-6 text-white"
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
@@ -109,9 +112,23 @@ export default function BookingsPage() {
                 />
               </svg>
             </button>
-            <div>
-              <h1 className="text-xl font-bold text-gray-900">Bookings</h1>
-              <p className="text-xs text-gray-600">Manage class bookings</p>
+            <div className="flex-1">
+              <h1 className="text-2xl font-bold text-white">Bookings</h1>
+              <p className="text-sm text-white/90 font-medium">Manage class bookings</p>
+            </div>
+          </div>
+
+          {/* Quick Stats */}
+          <div className="grid grid-cols-2 gap-3">
+            <div className="bg-white/20 backdrop-blur-md rounded-2xl p-3 border border-white/30">
+              <div className="text-2xl font-bold text-white">{filteredBookings.length}</div>
+              <div className="text-xs text-white/90 font-medium mt-0.5">{filter === 'All' ? 'Total' : filter} Bookings</div>
+            </div>
+            <div className="bg-white/20 backdrop-blur-md rounded-2xl p-3 border border-white/30">
+              <div className="text-2xl font-bold text-white">
+                {filteredBookings.reduce((sum, b) => sum + b.numberOfPeople, 0)}
+              </div>
+              <div className="text-xs text-white/90 font-medium mt-0.5">Total People</div>
             </div>
           </div>
         </div>
@@ -122,48 +139,51 @@ export default function BookingsPage() {
         {/* Add New Booking Card */}
         <div 
           onClick={() => setShowBookingModal(true)}
-          className="card-interactive bg-gradient-to-br from-purple-600 to-pink-600 p-5 mb-6 cursor-pointer"
+          className="relative bg-white rounded-3xl p-5 mb-6 cursor-pointer shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-1 border border-gray-100 overflow-hidden group"
         >
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className="w-12 h-12 bg-white/20 rounded-full flex items-center justify-center">
-                <span className="text-2xl text-white">+</span>
+          <div className="absolute inset-0 bg-gradient-to-br from-purple-50 to-pink-50 opacity-50"></div>
+          <div className="relative flex items-center justify-between">
+            <div className="flex items-center gap-4">
+              <div className="w-14 h-14 bg-gradient-to-br from-purple-600 to-pink-600 rounded-2xl flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform duration-300">
+                <span className="text-3xl text-white font-bold">+</span>
               </div>
               <div>
-                <h2 className="text-lg font-semibold text-white">
+                <h2 className="text-lg font-bold text-gray-900">
                   Add New Booking
                 </h2>
-                <p className="text-sm text-white/80 mt-0.5">
+                <p className="text-sm text-gray-600 mt-0.5">
                   Create a new class booking
                 </p>
               </div>
             </div>
-            <svg
-              className="w-6 h-6 text-white/80"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M9 5l7 7-7 7"
-              />
-            </svg>
+            <div className="w-10 h-10 bg-gray-50 rounded-xl flex items-center justify-center group-hover:bg-gray-100 transition-colors">
+              <svg
+                className="w-5 h-5 text-gray-400 group-hover:text-gray-600 group-hover:translate-x-0.5 transition-all"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2.5}
+                  d="M9 5l7 7-7 7"
+                />
+              </svg>
+            </div>
           </div>
         </div>
 
         {/* Filter Tabs */}
-        <div className="flex gap-2 mb-4 overflow-x-auto pb-2">
+        <div className="flex gap-2 mb-6 overflow-x-auto pb-2 scrollbar-hide">
           {['All', 'Pending', 'Confirmed', 'Completed', 'Cancelled'].map((filterOption) => (
             <button
               key={filterOption}
               onClick={() => setFilter(filterOption)}
-              className={`px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-colors ${
+              className={`px-5 py-2.5 rounded-2xl text-sm font-semibold whitespace-nowrap transition-all duration-300 ${
                 filter === filterOption
-                  ? 'bg-purple-600 text-white'
-                  : 'bg-white text-gray-700 border border-gray-200'
+                  ? 'bg-gradient-to-r from-blue-600 to-cyan-600 text-white shadow-lg scale-105'
+                  : 'bg-white text-gray-700 border-2 border-gray-200 hover:border-blue-300 hover:shadow-md'
               }`}
             >
               {filterOption}
@@ -173,101 +193,137 @@ export default function BookingsPage() {
 
         {/* Bookings List */}
         {loading ? (
-          <div className="text-center py-12">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600 mx-auto"></div>
-            <p className="mt-4 text-gray-600">Loading bookings...</p>
+          <div className="text-center py-16">
+            <div className="relative inline-block">
+              <div className="animate-spin rounded-full h-16 w-16 border-4 border-blue-200 border-t-blue-600"></div>
+              <div className="absolute inset-0 animate-ping rounded-full h-16 w-16 border-4 border-blue-300 opacity-20"></div>
+            </div>
+            <p className="mt-6 text-gray-600 font-medium">Loading bookings...</p>
           </div>
         ) : filteredBookings.length === 0 ? (
-          <div className="text-center py-12">
-            <div className="text-6xl mb-4">📅</div>
-            <h3 className="text-lg font-semibold text-gray-900 mb-2">
-              No bookings {filter !== 'All' ? `(${filter})` : ''}
+          <div className="bg-white rounded-3xl p-12 text-center shadow-lg border border-gray-100">
+            <div className="w-20 h-20 bg-gradient-to-br from-blue-100 to-cyan-100 rounded-3xl flex items-center justify-center mx-auto mb-4">
+              <span className="text-5xl">📅</span>
+            </div>
+            <h3 className="text-xl font-bold text-gray-900 mb-2">
+              No bookings {filter !== 'All' ? `(${filter})` : 'yet'}
             </h3>
             <p className="text-sm text-gray-600 mb-6">
               {filter === 'All' 
-                ? 'Start by adding your first booking from the calendar'
+                ? 'Start by adding your first booking'
                 : `No ${filter.toLowerCase()} bookings found`}
             </p>
           </div>
         ) : (
-          <div className="space-y-3">
-            {filteredBookings.map((booking) => (
+          <div className="space-y-4">
+            {filteredBookings.map((booking, index) => (
               <div
                 key={booking.id}
                 onClick={() => router.push(`/dashboard/calendar/session?date=${booking.sessionDate.split('T')[0]}&session=${booking.sessionTime}`)}
-                className="card p-4 cursor-pointer hover:shadow-md transition-shadow"
+                className="relative bg-white rounded-3xl p-5 cursor-pointer shadow-lg hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-1 border border-gray-100 overflow-hidden group"
+                style={{ animationDelay: `${index * 50}ms` }}
               >
-                <div className="flex items-start justify-between mb-3">
-                  <div className="flex-1">
-                    <h3 className="font-semibold text-gray-900">
-                      {booking.studentName}
-                    </h3>
-                    {booking.studentEmail && (
-                      <p className="text-sm text-gray-600 mt-1">
-                        {booking.studentEmail}
-                      </p>
-                    )}
-                    {booking.studentPhone && (
-                      <p className="text-sm text-gray-600">
-                        {booking.studentPhone}
-                      </p>
-                    )}
-                  </div>
-                  <span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusClass(booking.status)}`}>
-                    {booking.status}
-                  </span>
-                </div>
-                
-                <div className="space-y-1.5">
-                  <div className="flex items-center gap-2 text-sm text-gray-700">
-                    <svg
-                      className="w-4 h-4"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
-                      />
-                    </svg>
-                    <span>{formatDate(booking.sessionDate)}</span>
-                  </div>
-                  
-                  <div className="flex items-center gap-2 text-sm text-gray-700">
-                    <svg
-                      className="w-4 h-4"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
-                      />
-                    </svg>
-                    <span>{getSessionTimeLabel(booking.sessionTime)}</span>
-                  </div>
-                  
-                  <div className="flex items-center gap-4 text-sm text-gray-700">
-                    <span>
-                      <span className="font-medium">PAX:</span> {booking.numberOfPeople} {booking.numberOfPeople === 1 ? 'person' : 'people'}
-                    </span>
-                    {booking.totalAmountPaid && (
-                      <span>
-                        <span className="font-medium">Amount:</span> ₹{booking.totalAmountPaid.toFixed(2)}
-                        {booking.numberOfPeople > 1 && (
-                          <span className="text-xs text-gray-500 ml-1">
-                            (₹{(booking.totalAmountPaid / booking.numberOfPeople).toFixed(2)}/person)
-                          </span>
+                {/* Status indicator bar */}
+                <div className={`absolute left-0 top-0 bottom-0 w-1.5 ${
+                  booking.status === 'CONFIRMED' ? 'bg-gradient-to-b from-green-400 to-green-600' :
+                  booking.status === 'PENDING' ? 'bg-gradient-to-b from-yellow-400 to-yellow-600' :
+                  booking.status === 'COMPLETED' ? 'bg-gradient-to-b from-blue-400 to-blue-600' :
+                  'bg-gradient-to-b from-gray-400 to-gray-600'
+                }`}></div>
+
+                <div className="pl-3">
+                  {/* Header */}
+                  <div className="flex items-start justify-between mb-4">
+                    <div className="flex-1 min-w-0">
+                      <h3 className="text-lg font-bold text-gray-900 truncate">
+                        {booking.studentName}
+                      </h3>
+                      <div className="flex flex-col gap-1 mt-1">
+                        {booking.studentPhone && (
+                          <p className="text-sm text-gray-600 flex items-center gap-1.5">
+                            <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
+                            </svg>
+                            {booking.studentPhone}
+                          </p>
                         )}
-                      </span>
+                        {booking.studentEmail && (
+                          <p className="text-sm text-gray-600 truncate flex items-center gap-1.5">
+                            <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                            </svg>
+                            {booking.studentEmail}
+                          </p>
+                        )}
+                      </div>
+                    </div>
+                    <span className={`px-3 py-1.5 rounded-xl text-xs font-bold whitespace-nowrap ml-2 ${getStatusClass(booking.status)}`}>
+                      {booking.status}
+                    </span>
+                  </div>
+                  
+                  {/* Details Grid */}
+                  <div className="grid grid-cols-2 gap-3 mb-4">
+                    <div className="bg-gray-50 rounded-2xl p-3">
+                      <div className="flex items-center gap-2 text-gray-500 mb-1">
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                        </svg>
+                        <span className="text-xs font-medium">Date</span>
+                      </div>
+                      <p className="text-sm font-semibold text-gray-900">
+                        {new Date(booking.sessionDate).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' })}
+                      </p>
+                    </div>
+
+                    <div className="bg-gray-50 rounded-2xl p-3">
+                      <div className="flex items-center gap-2 text-gray-500 mb-1">
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                        <span className="text-xs font-medium">Time</span>
+                      </div>
+                      <p className="text-sm font-semibold text-gray-900">
+                        {booking.sessionTime === SessionTime.SESSION_1 ? '7-8 PM' : '9-10 PM'}
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* PAX and Amount */}
+                  <div className="flex items-center justify-between pt-3 border-t border-gray-100">
+                    <div className="flex items-center gap-2">
+                      <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center">
+                        <svg className="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                        </svg>
+                      </div>
+                      <div>
+                        <p className="text-xs text-gray-500 font-medium">People</p>
+                        <p className="text-sm font-bold text-gray-900">{booking.numberOfPeople} PAX</p>
+                      </div>
+                    </div>
+                    
+                    {booking.totalAmountPaid && (
+                      <div className="text-right">
+                        <p className="text-xs text-gray-500 font-medium">Amount</p>
+                        <p className="text-lg font-bold bg-gradient-to-r from-green-600 to-emerald-600 bg-clip-text text-transparent">
+                          ₹{booking.totalAmountPaid > 999 ? `${(booking.totalAmountPaid / 1000).toFixed(1)}k` : booking.totalAmountPaid.toFixed(0)}
+                        </p>
+                        {booking.numberOfPeople > 1 && (
+                          <p className="text-xs text-gray-500">
+                            ₹{(booking.totalAmountPaid / booking.numberOfPeople).toFixed(0)}/person
+                          </p>
+                        )}
+                      </div>
                     )}
                   </div>
+                </div>
+
+                {/* Hover arrow */}
+                <div className="absolute right-4 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity">
+                  <svg className="w-6 h-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 5l7 7-7 7" />
+                  </svg>
                 </div>
               </div>
             ))}
