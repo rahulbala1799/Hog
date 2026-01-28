@@ -82,22 +82,25 @@ export default function BookingModal({
       const response = await fetch(`/api/sessions/capacity?date=${dateStr}`)
       if (response.ok) {
         const data = await response.json()
-        // Update maxCapacity from API response if available
+        // Always update maxCapacity from API response (this is the source of truth from settings)
+        const apiMaxCapacity = data.maxCapacity || maxCapacity
         if (data.maxCapacity) {
           setMaxCapacity(data.maxCapacity)
         }
+        
         const session = data.sessions[0]
         if (session) {
+          // Use the session data which already has correct available spots
           setRemainingCapacity({
             SESSION_1: session.session1.available,
             SESSION_2: session.session2.available,
           })
         } else {
-          // If no session data, use maxCapacity from API or current state
-          const capacityToUse = data.maxCapacity || maxCapacity
+          // If no session data exists (no bookings yet), all spots are available
+          // Use maxCapacity from API response (from settings), not from state
           setRemainingCapacity({
-            SESSION_1: capacityToUse,
-            SESSION_2: capacityToUse,
+            SESSION_1: apiMaxCapacity,
+            SESSION_2: apiMaxCapacity,
           })
         }
       }
