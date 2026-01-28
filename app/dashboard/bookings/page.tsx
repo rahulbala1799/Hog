@@ -4,6 +4,7 @@ import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { useState, useEffect } from 'react'
 import { BookingStatus, SessionTime } from '@prisma/client'
+import BookingModal from '../calendar/components/BookingModal'
 
 interface Booking {
   id: string
@@ -23,6 +24,7 @@ export default function BookingsPage() {
   const [bookings, setBookings] = useState<Booking[]>([])
   const [loading, setLoading] = useState(true)
   const [filter, setFilter] = useState<string>('All')
+  const [showBookingModal, setShowBookingModal] = useState(false)
 
   useEffect(() => {
     fetchBookings()
@@ -116,6 +118,41 @@ export default function BookingsPage() {
 
       {/* Main Content */}
       <main className="px-4 py-6 pb-24">
+        {/* Add New Booking Card */}
+        <div 
+          onClick={() => setShowBookingModal(true)}
+          className="card-interactive bg-gradient-to-br from-purple-600 to-pink-600 p-5 mb-6 cursor-pointer"
+        >
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="w-12 h-12 bg-white/20 rounded-full flex items-center justify-center">
+                <span className="text-2xl text-white">+</span>
+              </div>
+              <div>
+                <h2 className="text-lg font-semibold text-white">
+                  Add New Booking
+                </h2>
+                <p className="text-sm text-white/80 mt-0.5">
+                  Create a new class booking
+                </p>
+              </div>
+            </div>
+            <svg
+              className="w-6 h-6 text-white/80"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M9 5l7 7-7 7"
+              />
+            </svg>
+          </div>
+        </div>
+
         {/* Filter Tabs */}
         <div className="flex gap-2 mb-4 overflow-x-auto pb-2">
           {['All', 'Pending', 'Confirmed', 'Completed', 'Cancelled'].map((filterOption) => (
@@ -236,6 +273,17 @@ export default function BookingsPage() {
           </div>
         )}
       </main>
+
+      {/* Booking Modal */}
+      <BookingModal
+        isOpen={showBookingModal}
+        onClose={() => setShowBookingModal(false)}
+        selectedDate={new Date()}
+        onSuccess={() => {
+          fetchBookings()
+          setShowBookingModal(false)
+        }}
+      />
     </div>
   )
 }
