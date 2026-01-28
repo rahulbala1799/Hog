@@ -96,6 +96,11 @@ export async function PUT(
     if (studentEmail !== undefined) updateData.studentEmail = studentEmail || null
     if (studentPhone !== undefined) updateData.studentPhone = studentPhone || null
     if (notes !== undefined) updateData.notes = notes || null
+    if (totalAmountPaid !== undefined) {
+      updateData.totalAmountPaid = totalAmountPaid !== null && totalAmountPaid !== '' 
+        ? parseFloat(totalAmountPaid.toString()) 
+        : null
+    }
     if (status !== undefined && Object.values(BookingStatus).includes(status)) {
       updateData.status = status
     }

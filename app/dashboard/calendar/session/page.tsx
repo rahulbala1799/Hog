@@ -12,6 +12,7 @@ interface Booking {
   numberOfPeople: number
   sessionDate: string
   sessionTime: SessionTime
+  totalAmountPaid: number | null
   status: BookingStatus
   notes: string | null
   createdAt: string
