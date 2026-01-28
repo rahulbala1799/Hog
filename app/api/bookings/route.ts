@@ -111,9 +111,9 @@ export async function POST(request: Request) {
     } = body
 
     // Validate required fields
-    if (!studentName || !sessionDate || !sessionTime) {
+    if (!studentName || !studentPhone || !sessionDate || !sessionTime) {
       return NextResponse.json(
-        { error: 'Student name, session date, and session time are required' },
+        { error: 'Student name, phone number, session date, and session time are required' },
         { status: 400 }
       )
     }
