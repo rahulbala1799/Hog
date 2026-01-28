@@ -26,5 +26,4 @@ export const config = {
     '/staff/:path*',
     '/dashboard/:path*',
   ],
-  runtime: 'nodejs', // Use Node.js runtime instead of Edge
 }
