@@ -61,7 +61,8 @@ export default function BookingModal({
       const response = await fetch('/api/settings')
       if (response.ok) {
         const data = await response.json()
-        setMaxCapacity(data.settings.maxPersonsPerClass)
+        const maxPersons = data.settings.maxPersonsPerClass || 10
+        setMaxCapacity(maxPersons)
         
         // Get class timings for the selected day
         const dayOfWeek = selectedDate.getDay()
@@ -81,6 +82,10 @@ export default function BookingModal({
       const response = await fetch(`/api/sessions/capacity?date=${dateStr}`)
       if (response.ok) {
         const data = await response.json()
+        // Update maxCapacity from API response if available
+        if (data.maxCapacity) {
+          setMaxCapacity(data.maxCapacity)
+        }
         const session = data.sessions[0]
         if (session) {
           setRemainingCapacity({
@@ -88,9 +93,11 @@ export default function BookingModal({
             SESSION_2: session.session2.available,
           })
         } else {
+          // If no session data, use maxCapacity from API or current state
+          const capacityToUse = data.maxCapacity || maxCapacity
           setRemainingCapacity({
-            SESSION_1: maxCapacity,
-            SESSION_2: maxCapacity,
+            SESSION_1: capacityToUse,
+            SESSION_2: capacityToUse,
           })
         }
       }
