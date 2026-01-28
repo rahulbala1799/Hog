@@ -16,6 +16,9 @@ export async function POST(request: Request) {
       )
     }
 
+    // Check if any users exist in our database
+    const userCount = await prisma.user.count()
+    
     // Check if admin already exists
     const adminExists = await prisma.user.findFirst({
       where: {
@@ -23,12 +26,17 @@ export async function POST(request: Request) {
       },
     })
 
-    if (adminExists) {
+    // Only block if there's already an admin AND there are users in the database
+    // This allows creating the first admin even if there are non-admin users
+    if (adminExists && userCount > 0) {
       return NextResponse.json(
-        { error: 'Admin user already exists. Sign-up is disabled.' },
+        { error: 'Admin user already exists. Sign-up is disabled. Please contact an administrator to create your account.' },
         { status: 403 }
       )
     }
+    
+    // If no users exist at all, allow creating the first admin
+    // This handles the case where Neon Auth has users but our database is empty
 
     // Check if email already exists
     const existingUser = await prisma.user.findUnique({

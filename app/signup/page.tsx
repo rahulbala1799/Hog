@@ -16,38 +16,11 @@ export default function SignUp() {
   const [canSignUp, setCanSignUp] = useState(false)
 
   useEffect(() => {
-    // Check if admin already exists
-    const checkAdmin = async () => {
-      try {
-        const response = await fetch('/api/auth/check-admin')
-        if (!response.ok) {
-          // If API fails, allow sign-up attempt anyway (will be validated on submit)
-          console.warn('Failed to check admin status, allowing sign-up attempt')
-          setCanSignUp(true)
-          setChecking(false)
-          return
-        }
-        
-        const data = await response.json()
-        
-        if (data.adminExists) {
-          // Admin exists, redirect to login
-          router.push('/')
-        } else {
-          // No admin, allow sign-up
-          setCanSignUp(true)
-        }
-      } catch (err) {
-        console.error('Error checking admin:', err)
-        // On error, allow sign-up attempt (will be validated on submit)
-        setCanSignUp(true)
-      } finally {
-        setChecking(false)
-      }
-    }
-
-    checkAdmin()
-  }, [router])
+    // Always allow sign-up form to show - backend will validate
+    // This way users can see the form and get proper error messages
+    setCanSignUp(true)
+    setChecking(false)
+  }, [])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -87,6 +60,7 @@ export default function SignUp() {
       const data = await response.json()
 
       if (!response.ok) {
+        // Show the error message from backend
         setError(data.error || 'Failed to create admin account')
         setLoading(false)
         return
