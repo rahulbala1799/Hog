@@ -1,7 +1,7 @@
 'use client'
 
 import { useRouter, useSearchParams } from 'next/navigation'
-import { useState, useEffect, Suspense, useCallback } from 'react'
+import { useState, useEffect, Suspense } from 'react'
 import { SessionTime, BookingStatus } from '@prisma/client'
 import BookingModal from '../components/BookingModal'
 
@@ -14,6 +14,7 @@ interface Booking {
   sessionDate: string
   sessionTime: SessionTime
   totalAmountPaid: number | null
+  bookingType?: string
   status: BookingStatus
   notes: string | null
   createdAt: string
@@ -83,6 +84,13 @@ function SessionDetailContent() {
       setLoading(false)
     }
   }
+
+  useEffect(() => {
+    if (date && session) {
+      fetchSessionData()
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [date, session])
 
   const handleDeleteBooking = async (bookingId: string) => {
     try {
