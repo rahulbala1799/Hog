@@ -9,11 +9,25 @@ interface ClassTiming {
   endTime: string
 }
 
+interface Booking {
+  id: string
+  studentName: string
+  studentEmail: string | null
+  studentPhone: string | null
+  numberOfPeople: number
+  sessionDate: string
+  sessionTime: SessionTime
+  totalAmountPaid: number | null
+  bookingType?: string
+  status?: string
+}
+
 interface BookingModalProps {
   isOpen: boolean
   onClose: () => void
   selectedDate: Date
   onSuccess: () => void
+  booking?: Booking | null // Optional booking for edit mode
 }
 
 export default function BookingModal({
@@ -21,7 +35,9 @@ export default function BookingModal({
   onClose,
   selectedDate,
   onSuccess,
+  booking = null, // null means add mode, booking object means edit mode
 }: BookingModalProps) {
+  const isEditMode = !!booking
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [classTimings, setClassTimings] = useState<ClassTiming[]>([])
@@ -43,20 +59,35 @@ export default function BookingModal({
     if (isOpen) {
       fetchSettings()
       fetchCapacity()
-      // Reset form
-      setFormData({
-        studentName: '',
-        studentPhone: '',
-        studentEmail: '',
-        numberOfPeople: 1,
-        sessionDate: selectedDate.toISOString().split('T')[0],
-        sessionTime: '',
-        bookingType: 'REGULAR',
-        totalAmountPaid: '',
-      })
+      // Reset form or populate with booking data
+      if (booking) {
+        // Edit mode - populate with existing booking data
+        setFormData({
+          studentName: booking.studentName,
+          studentPhone: booking.studentPhone || '',
+          studentEmail: booking.studentEmail || '',
+          numberOfPeople: booking.numberOfPeople,
+          sessionDate: booking.sessionDate.split('T')[0],
+          sessionTime: booking.sessionTime,
+          bookingType: (booking.bookingType || 'REGULAR') as 'REGULAR' | 'GIFTS' | 'INFLUENCER',
+          totalAmountPaid: booking.totalAmountPaid ? booking.totalAmountPaid.toString() : '',
+        })
+      } else {
+        // Add mode - reset form
+        setFormData({
+          studentName: '',
+          studentPhone: '',
+          studentEmail: '',
+          numberOfPeople: 1,
+          sessionDate: selectedDate.toISOString().split('T')[0],
+          sessionTime: '',
+          bookingType: 'REGULAR',
+          totalAmountPaid: '',
+        })
+      }
       setError('')
     }
-  }, [isOpen, selectedDate])
+  }, [isOpen, selectedDate, booking])
 
   // Refetch capacity and settings when date changes
   useEffect(() => {
@@ -229,8 +260,8 @@ export default function BookingModal({
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
       <div className="bg-white rounded-2xl p-5 max-w-sm w-full max-h-[90vh] overflow-y-auto">
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="text-lg font-bold text-gray-900">Add Booking</h2>
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-lg font-bold text-gray-900">{isEditMode ? 'Edit Booking' : 'Add Booking'}</h2>
           <button
             onClick={onClose}
             className="p-2 rounded-full hover:bg-gray-100 transition-colors"
@@ -497,10 +528,10 @@ export default function BookingModal({
             <button
               type="submit"
               disabled={loading || !formData.sessionTime}
-              className="flex-1 px-3 py-2.5 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-lg text-sm font-medium hover:from-purple-700 hover:to-pink-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              {loading ? 'Creating...' : 'Create Booking'}
-            </button>
+                  className="flex-1 px-3 py-2.5 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-lg text-sm font-medium hover:from-purple-700 hover:to-pink-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {loading ? (isEditMode ? 'Updating...' : 'Creating...') : (isEditMode ? 'Update Booking' : 'Create Booking')}
+                </button>
           </div>
         </form>
       </div>

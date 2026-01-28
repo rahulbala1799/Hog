@@ -1,8 +1,9 @@
 'use client'
 
 import { useRouter, useSearchParams } from 'next/navigation'
-import { useState, useEffect, Suspense } from 'react'
+import { useState, useEffect, Suspense, useCallback } from 'react'
 import { SessionTime, BookingStatus } from '@prisma/client'
+import BookingModal from '../components/BookingModal'
 
 interface Booking {
   id: string
@@ -34,12 +35,11 @@ function SessionDetailContent() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
   const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null)
+  const [editBooking, setEditBooking] = useState<Booking | null>(null)
 
   useEffect(() => {
-    if (date && session) {
-      fetchSessionData()
-    }
-  }, [date, session])
+    fetchSessionDataWrapper()
+  }, [fetchSessionDataWrapper])
 
   const fetchSessionData = async () => {
     setLoading(true)
