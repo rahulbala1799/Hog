@@ -137,9 +137,37 @@ async function importBookings() {
         // Clean phone number (remove spaces, keep only digits)
         const phone = row.contact.trim() || null
 
+        // Generate issue number: HOG-XX-YY where XX is year (last 2 digits) and YY is sequential number
+        const year = sessionDate.getFullYear().toString().slice(-2) // Last 2 digits of year
+        
+        // Find the last booking for this year to get the next sequence number
+        const lastBooking = await prisma.booking.findFirst({
+          where: {
+            issueNumber: {
+              startsWith: `HOG-${year}-`,
+            },
+          },
+          orderBy: {
+            createdAt: 'desc',
+          },
+        })
+
+        let sequenceNumber = 1
+        if (lastBooking && lastBooking.issueNumber) {
+          // Extract sequence number from last booking (e.g., "HOG-26-042" -> 42)
+          const match = lastBooking.issueNumber.match(/HOG-\d{2}-(\d+)/)
+          if (match) {
+            sequenceNumber = parseInt(match[1], 10) + 1
+          }
+        }
+
+        // Format: HOG-26-001, HOG-26-002, etc.
+        const issueNumber = `HOG-${year}-${sequenceNumber.toString().padStart(3, '0')}`
+
         // Create booking
         const booking = await prisma.booking.create({
           data: {
+            issueNumber,
             studentName: row.name,
             studentPhone: phone,
             studentEmail: null,
