@@ -38,8 +38,8 @@ async function main() {
 
   console.log('✅ Created staff user:', staff.email)
 
-  // Create user from Neon
-  const neonUser = await prisma.user.upsert({
+  // Note: Real users should be created manually or via a secure admin interface
+  // Do not commit real user credentials to git
 
   console.log('🎉 Seed completed!')
 }
