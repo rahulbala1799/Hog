@@ -5,92 +5,139 @@ import { Document, Page, Text, View, Image, StyleSheet } from '@react-pdf/render
 const styles = StyleSheet.create({
   page: {
     width: 400,
-    height: 600,
+    height: 550,
     backgroundColor: '#FFFFFF',
+    padding: 0,
   },
+  // Header with gradient effect
   header: {
     backgroundColor: '#8B5CF6',
-    height: 150,
-    paddingTop: 40,
+    paddingTop: 35,
+    paddingBottom: 25,
     paddingHorizontal: 30,
   },
-  headerTitle: {
-    fontSize: 28,
+  brandName: {
+    fontSize: 32,
     fontWeight: 'bold',
     color: '#FFFFFF',
     textAlign: 'center',
-    marginBottom: 12,
+    letterSpacing: 2,
+    marginBottom: 8,
   },
-  headerSubtitle: {
-    fontSize: 12,
+  ticketLabel: {
+    fontSize: 11,
     color: '#E9D5FF',
     textAlign: 'center',
+    letterSpacing: 1,
   },
-  headerLine: {
-    borderBottomWidth: 1,
-    borderBottomColor: '#E9D5FF',
-    marginTop: 15,
-  },
-  body: {
+  // Main content area
+  contentContainer: {
+    flex: 1,
     paddingHorizontal: 30,
-    paddingTop: 30,
+    paddingTop: 25,
   },
-  section: {
-    marginBottom: 25,
+  // Issue number badge
+  issueBadge: {
+    backgroundColor: '#F3E8FF',
+    paddingVertical: 8,
+    paddingHorizontal: 15,
+    borderRadius: 8,
+    alignSelf: 'center',
+    marginBottom: 20,
   },
-  label: {
-    fontSize: 10,
-    color: '#6B7280',
+  issueText: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: '#7C3AED',
+    letterSpacing: 1,
+  },
+  // Guest details
+  detailsRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginBottom: 18,
+    paddingHorizontal: 10,
+  },
+  detailsColumn: {
+    flex: 1,
+  },
+  detailLabel: {
+    fontSize: 9,
+    color: '#9CA3AF',
     marginBottom: 5,
+    letterSpacing: 0.5,
+    textTransform: 'uppercase',
   },
-  value: {
+  detailValue: {
+    fontSize: 13,
+    color: '#1F2937',
+    fontWeight: 'bold',
+  },
+  guestNameValue: {
     fontSize: 16,
-    color: '#1F2937',
+    color: '#111827',
     fontWeight: 'bold',
   },
-  valueLarge: {
-    fontSize: 20,
-    color: '#8B5CF6',
-    fontWeight: 'bold',
+  // Divider
+  divider: {
+    borderBottomWidth: 1,
+    borderBottomColor: '#E5E7EB',
+    marginVertical: 15,
+    marginHorizontal: 10,
   },
-  issueNumber: {
-    fontSize: 20,
-    color: '#8B5CF6',
-    fontWeight: 'bold',
-    marginTop: 5,
-  },
-  guestName: {
-    fontSize: 16,
-    color: '#1F2937',
-    fontWeight: 'bold',
-  },
-  dateText: {
-    fontSize: 14,
-    color: '#1F2937',
-  },
-  qrContainer: {
+  // QR Section - moved up and integrated better
+  qrSection: {
+    flexDirection: 'row',
     alignItems: 'center',
-    marginTop: 30,
-    marginBottom: 10,
+    justifyContent: 'space-between',
+    paddingHorizontal: 15,
+    paddingVertical: 15,
+    backgroundColor: '#F9FAFB',
+    borderRadius: 12,
+    marginTop: 10,
+    marginHorizontal: 10,
   },
-  qrCode: {
-    width: 100,
-    height: 100,
+  qrCodeImage: {
+    width: 80,
+    height: 80,
   },
-  qrLabel: {
-    fontSize: 8,
+  qrTextContainer: {
+    flex: 1,
+    marginLeft: 15,
+  },
+  qrTitle: {
+    fontSize: 12,
+    fontWeight: 'bold',
+    color: '#1F2937',
+    marginBottom: 4,
+  },
+  qrSubtitle: {
+    fontSize: 9,
     color: '#6B7280',
-    textAlign: 'center',
-    marginTop: 8,
+    lineHeight: 1.4,
   },
+  // Footer
   footer: {
     position: 'absolute',
-    bottom: 30,
+    bottom: 20,
     left: 30,
     right: 30,
-    fontSize: 7,
+    paddingTop: 12,
+    borderTopWidth: 1,
+    borderTopColor: '#E5E7EB',
+  },
+  footerText: {
+    fontSize: 8,
     color: '#9CA3AF',
     textAlign: 'center',
+  },
+  // Decorative elements
+  decorativeDot: {
+    width: 6,
+    height: 6,
+    borderRadius: 3,
+    backgroundColor: '#8B5CF6',
+    marginHorizontal: 4,
   },
 })
 
@@ -105,58 +152,71 @@ interface TicketData {
 
 const TicketDocument = (data: TicketData) => (
   <Document>
-    <Page size={{ width: 400, height: 600 }} style={styles.page}>
+    <Page size={{ width: 400, height: 550 }} style={styles.page}>
       {/* Header */}
       <View style={styles.header}>
-        <Text style={styles.headerTitle}>HOUSE OF GLOW</Text>
-        <Text style={styles.headerSubtitle}>Admission Ticket</Text>
-        <View style={styles.headerLine} />
+        <Text style={styles.brandName}>HOUSE OF GLOW</Text>
+        <Text style={styles.ticketLabel}>ADMISSION TICKET</Text>
       </View>
 
-      {/* Body */}
-      <View style={styles.body}>
-        {/* Issue Number */}
-        <View style={styles.section}>
-          <Text style={styles.label}>TICKET NUMBER</Text>
-          <Text style={styles.issueNumber}>{data.issueNumber}</Text>
+      {/* Content */}
+      <View style={styles.contentContainer}>
+        {/* Issue Number Badge */}
+        <View style={styles.issueBadge}>
+          <Text style={styles.issueText}>{data.issueNumber}</Text>
         </View>
 
-        {/* Guest Name */}
-        <View style={styles.section}>
-          <Text style={styles.label}>GUEST NAME</Text>
-          <Text style={styles.guestName}>{data.guestName}</Text>
+        {/* Guest Name - prominent */}
+        <View style={{ marginBottom: 18, paddingHorizontal: 10 }}>
+          <Text style={styles.detailLabel}>Guest Name</Text>
+          <Text style={styles.guestNameValue}>{data.guestName}</Text>
         </View>
 
-        {/* Number of People */}
-        <View style={styles.section}>
-          <Text style={styles.label}>NUMBER OF GUESTS</Text>
-          <Text style={styles.value}>
-            {data.numberOfPeople} {data.numberOfPeople === 1 ? 'Person' : 'People'}
-          </Text>
+        {/* Details Grid */}
+        <View style={styles.detailsRow}>
+          <View style={styles.detailsColumn}>
+            <Text style={styles.detailLabel}>Guests</Text>
+            <Text style={styles.detailValue}>
+              {data.numberOfPeople} {data.numberOfPeople === 1 ? 'Person' : 'People'}
+            </Text>
+          </View>
         </View>
 
-        {/* Session Date */}
-        <View style={styles.section}>
-          <Text style={styles.label}>SESSION DATE</Text>
-          <Text style={styles.dateText}>{data.sessionDate}</Text>
+        <View style={styles.detailsRow}>
+          <View style={styles.detailsColumn}>
+            <Text style={styles.detailLabel}>Date</Text>
+            <Text style={styles.detailValue}>{data.sessionDate}</Text>
+          </View>
         </View>
 
-        {/* Session Time */}
-        <View style={styles.section}>
-          <Text style={styles.label}>SESSION TIME</Text>
-          <Text style={styles.dateText}>{data.sessionTime}</Text>
+        <View style={styles.detailsRow}>
+          <View style={styles.detailsColumn}>
+            <Text style={styles.detailLabel}>Time</Text>
+            <Text style={styles.detailValue}>{data.sessionTime}</Text>
+          </View>
         </View>
 
-        {/* QR Code */}
-        <View style={styles.qrContainer}>
+        <View style={styles.divider} />
+
+        {/* QR Code Section - compact and integrated */}
+        <View style={styles.qrSection}>
           {/* eslint-disable-next-line jsx-a11y/alt-text */}
-          <Image src={data.qrCodeDataUrl} style={styles.qrCode} />
-          <Text style={styles.qrLabel}>Scan to visit houseofglow.in</Text>
+          <Image src={data.qrCodeDataUrl} style={styles.qrCodeImage} />
+          <View style={styles.qrTextContainer}>
+            <Text style={styles.qrTitle}>Visit Our Website</Text>
+            <Text style={styles.qrSubtitle}>
+              Scan this code to visit{'\n'}houseofglow.in
+            </Text>
+          </View>
         </View>
       </View>
 
       {/* Footer */}
-      <Text style={styles.footer}>Please present this ticket at the venue</Text>
+      <View style={styles.footer}>
+        <Text style={styles.footerText}>
+          Please present this ticket at the venue entrance
+        </Text>
+      </View>
     </Page>
   </Document>
 )
