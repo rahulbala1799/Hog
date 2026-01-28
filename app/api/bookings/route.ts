@@ -187,9 +187,41 @@ export async function POST(request: Request) {
       ? (bookingType as BookingType)
       : BookingType.REGULAR
 
+    // Generate issue number: HOG-XX-YY where XX is year (last 2 digits) and YY is sequential number
+    const bookingDate = new Date(sessionDate)
+    const year = bookingDate.getFullYear().toString().slice(-2) // Last 2 digits of year
+    
+    // Find the last booking for this year to get the next sequence number
+    const startOfYear = new Date(bookingDate.getFullYear(), 0, 1)
+    const endOfYear = new Date(bookingDate.getFullYear(), 11, 31, 23, 59, 59)
+    
+    const lastBooking = await prisma.booking.findFirst({
+      where: {
+        issueNumber: {
+          startsWith: `HOG-${year}-`,
+        },
+      },
+      orderBy: {
+        createdAt: 'desc',
+      },
+    })
+
+    let sequenceNumber = 1
+    if (lastBooking && lastBooking.issueNumber) {
+      // Extract sequence number from last booking (e.g., "HOG-26-042" -> 42)
+      const match = lastBooking.issueNumber.match(/HOG-\d{2}-(\d+)/)
+      if (match) {
+        sequenceNumber = parseInt(match[1], 10) + 1
+      }
+    }
+
+    // Format: HOG-26-001, HOG-26-002, etc.
+    const issueNumber = `HOG-${year}-${sequenceNumber.toString().padStart(3, '0')}`
+
     // Create booking
     const booking = await prisma.booking.create({
       data: {
+        issueNumber,
         studentName,
         studentEmail: studentEmail || null,
         studentPhone: studentPhone || null,

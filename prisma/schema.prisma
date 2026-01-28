@@ -86,6 +86,7 @@ model ClassType {
 
 model Booking {
   id             String        @id @default(uuid())
+  issueNumber    String        @unique // Format: HOG-XX-YY (e.g., HOG-26-001)
   studentName    String
   studentEmail   String?
   studentPhone   String?
@@ -104,6 +105,7 @@ model Booking {
   @@index([sessionDate])
   @@index([sessionDate, sessionTime])
   @@index([status])
+  @@index([issueNumber])
   @@map("bookings")
 }
 

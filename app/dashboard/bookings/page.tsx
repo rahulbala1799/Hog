@@ -8,6 +8,7 @@ import BookingModal from '../calendar/components/BookingModal'
 
 interface Booking {
   id: string
+  issueNumber: string
   studentName: string
   studentEmail: string | null
   studentPhone: string | null

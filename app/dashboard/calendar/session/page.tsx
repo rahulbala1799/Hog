@@ -7,6 +7,7 @@ import BookingModal from '../components/BookingModal'
 
 interface Booking {
   id: string
+  issueNumber: string
   studentName: string
   studentEmail: string | null
   studentPhone: string | null
@@ -342,7 +343,10 @@ function SessionDetailContent() {
                         {/* Header */}
                         <div className="flex items-start justify-between mb-4">
                           <div className="flex-1 min-w-0">
-                            <div className="flex items-center gap-2 mb-2">
+                            <div className="flex items-center gap-2 mb-2 flex-wrap">
+                              <span className="px-2.5 py-1 bg-gradient-to-r from-purple-100 to-pink-100 text-purple-700 text-xs font-bold rounded-lg">
+                                {booking.issueNumber}
+                              </span>
                               <h4 className="text-lg font-bold text-gray-900 truncate">{booking.studentName}</h4>
                               <span className={`px-3 py-1 rounded-xl text-xs font-bold whitespace-nowrap ${
                                 booking.status === BookingStatus.CONFIRMED
