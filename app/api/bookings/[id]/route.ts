@@ -111,11 +111,22 @@ export async function PUT(
       const targetTime = (sessionTime as SessionTime) || existingBooking.sessionTime
       const targetPax = numberOfPeople || existingBooking.numberOfPeople
 
-      // Get max capacity
-      const settings = await prisma.appSettings.findUnique({
+      // Get max capacity from settings (create if doesn't exist)
+      let settings = await prisma.appSettings.findUnique({
         where: { id: 'singleton' },
       })
-      const maxCapacity = settings?.maxPersonsPerClass || 10
+      
+      if (!settings) {
+        // Create default settings if they don't exist
+        settings = await prisma.appSettings.create({
+          data: {
+            id: 'singleton',
+            maxPersonsPerClass: 10, // Default, but should be set in settings
+          },
+        })
+      }
+      
+      const maxCapacity = settings.maxPersonsPerClass
 
       // Check current capacity (excluding this booking)
       const otherBookings = await prisma.booking.findMany({

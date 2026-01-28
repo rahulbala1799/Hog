@@ -45,6 +45,7 @@ export default function CalendarPage() {
   const [currentDate, setCurrentDate] = useState(new Date())
   const [bookings, setBookings] = useState<Booking[]>([])
   const [capacities, setCapacities] = useState<SessionCapacity[]>([])
+  const [maxCapacity, setMaxCapacity] = useState(10)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
 
@@ -86,6 +87,7 @@ export default function CalendarPage() {
         const capacityData = await capacityRes.json()
         setBookings(bookingsData.bookings)
         setCapacities(capacityData.sessions)
+        setMaxCapacity(capacityData.maxCapacity || 10)
       } else {
         setError('Failed to load calendar data')
       }
@@ -168,7 +170,7 @@ export default function CalendarPage() {
     const capacity = capacities.find((c) => c.date === dateStr)
     
     if (!capacity) {
-      return { booked: 0, available: 10, percentage: 0 }
+      return { booked: 0, available: maxCapacity, percentage: 0 }
     }
     
     return sessionTime === SessionTime.SESSION_1 ? capacity.session1 : capacity.session2
@@ -212,7 +214,7 @@ export default function CalendarPage() {
         <div className="mb-3">
           <div className="flex items-center justify-between mb-2">
             <span className={`text-2xl font-bold ${getCapacityColor(capacity.percentage)}`}>
-              {capacity.booked}/{capacity.booked + capacity.available}
+              {capacity.booked}/{maxCapacity}
             </span>
             <span className="text-sm text-gray-600">Booked</span>
           </div>

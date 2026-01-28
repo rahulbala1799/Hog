@@ -29,7 +29,7 @@ function SessionDetailContent() {
   const session = searchParams.get('session') as SessionTime
 
   const [bookings, setBookings] = useState<Booking[]>([])
-  const [capacity, setCapacity] = useState({ booked: 0, available: 10, percentage: 0 })
+  const [capacity, setCapacity] = useState({ booked: 0, available: 0, percentage: 0, maxCapacity: 10 })
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
   const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null)
@@ -64,7 +64,18 @@ function SessionDetailContent() {
           const cap = session === SessionTime.SESSION_1 
             ? sessionCapacity.session1 
             : sessionCapacity.session2
-          setCapacity(cap)
+          setCapacity({
+            ...cap,
+            maxCapacity: capacityData.maxCapacity || 10,
+          })
+        } else {
+          // If no capacity data, use maxCapacity from response
+          setCapacity({
+            booked: 0,
+            available: capacityData.maxCapacity || 10,
+            percentage: 0,
+            maxCapacity: capacityData.maxCapacity || 10,
+          })
         }
       } else {
         setError('Failed to load session data')
@@ -207,7 +218,7 @@ function SessionDetailContent() {
                 <div className="flex items-center justify-between mb-2">
                   <span className="text-sm text-gray-600">Capacity</span>
                   <span className={`text-2xl font-bold ${getCapacityColor(capacity.percentage)}`}>
-                    {capacity.booked} / {capacity.booked + capacity.available}
+                    {capacity.booked} / {capacity.maxCapacity}
                   </span>
                 </div>
                 <div className="w-full bg-gray-200 rounded-full h-3 overflow-hidden">
