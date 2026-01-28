@@ -124,7 +124,7 @@ export default function Dashboard() {
             <div className="animate-spin rounded-full h-16 w-16 border-4 border-purple-200 border-t-purple-600 mx-auto"></div>
             <div className="absolute inset-0 animate-ping rounded-full h-16 w-16 border-4 border-purple-300 opacity-20 mx-auto"></div>
           </div>
-          <p className="mt-6 text-gray-600 font-medium">Loading your beautiful dashboard...</p>
+          <p className="mt-6 text-gray-600 font-medium">Loading...</p>
         </div>
       </div>
     )
