@@ -1,4 +1,4 @@
-import { NextAuthOptions } from 'next-auth'
+import NextAuth, { NextAuthOptions } from 'next-auth'
 import CredentialsProvider from 'next-auth/providers/credentials'
 import { prisma } from './db'
 import * as bcrypt from 'bcryptjs'
@@ -68,3 +68,6 @@ export const authOptions: NextAuthOptions = {
   },
   secret: process.env.NEXTAUTH_SECRET,
 }
+
+// Export auth function for use in middleware and server components
+export const { auth, signIn, signOut } = NextAuth(authOptions)
