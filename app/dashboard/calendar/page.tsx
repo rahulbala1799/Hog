@@ -3,6 +3,7 @@
 import { useRouter } from 'next/navigation'
 import { useState, useEffect } from 'react'
 import { SessionTime, BookingStatus } from '@prisma/client'
+import BookingModal from './components/BookingModal'
 
 type ViewMode = 'daily' | 'weekly' | 'monthly'
 
@@ -48,6 +49,7 @@ export default function CalendarPage() {
   const [maxCapacity, setMaxCapacity] = useState(10)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
+  const [showBookingModal, setShowBookingModal] = useState(false)
 
   useEffect(() => {
     fetchData()
@@ -562,7 +564,7 @@ export default function CalendarPage() {
 
       {/* Floating Action Button */}
       <button
-        onClick={() => router.push('/dashboard/bookings/new')}
+        onClick={() => setShowBookingModal(true)}
         className="fixed bottom-6 right-6 w-14 h-14 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-full shadow-lg flex items-center justify-center hover:shadow-xl transition-all transform hover:scale-110"
       >
         <svg
@@ -579,6 +581,16 @@ export default function CalendarPage() {
           />
         </svg>
       </button>
+
+      {/* Booking Modal */}
+      <BookingModal
+        isOpen={showBookingModal}
+        onClose={() => setShowBookingModal(false)}
+        selectedDate={currentDate}
+        onSuccess={() => {
+          fetchData()
+        }}
+      />
     </div>
   )
 }

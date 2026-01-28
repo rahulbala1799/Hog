@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/db'
 import { requireAdmin, getCurrentUser } from '@/lib/auth-helpers'
-import { BookingStatus, SessionTime } from '@prisma/client'
+import { BookingStatus, SessionTime, BookingType } from '@prisma/client'
 
 export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
@@ -105,6 +105,7 @@ export async function POST(request: Request) {
       numberOfPeople,
       sessionDate,
       sessionTime,
+      bookingType,
       status,
       notes,
     } = body
@@ -180,6 +181,11 @@ export async function POST(request: Request) {
       )
     }
 
+    // Validate booking type
+    const validBookingType = bookingType && Object.values(BookingType).includes(bookingType as BookingType)
+      ? (bookingType as BookingType)
+      : BookingType.REGULAR
+
     // Create booking
     const booking = await prisma.booking.create({
       data: {
@@ -189,6 +195,7 @@ export async function POST(request: Request) {
         numberOfPeople: pax,
         sessionDate: new Date(sessionDate),
         sessionTime: sessionTime as SessionTime,
+        bookingType: validBookingType,
         status: (status as BookingStatus) || BookingStatus.PENDING,
         notes: notes || null,
         createdById: currentUser.id,

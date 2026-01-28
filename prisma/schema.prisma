@@ -22,6 +22,12 @@ enum BookingStatus {
   CANCELLED
 }
 
+enum BookingType {
+  REGULAR
+  GIFTS
+  INFLUENCER
+}
+
 enum SessionTime {
   SESSION_1  // 7:00 PM - 8:00 PM
   SESSION_2  // 9:00 PM - 10:00 PM
@@ -86,6 +92,7 @@ model Booking {
   numberOfPeople Int           @default(1) // PAX count
   sessionDate    DateTime      // Date of the session
   sessionTime    SessionTime   // SESSION_1 or SESSION_2
+  bookingType    BookingType   @default(REGULAR)
   status         BookingStatus @default(PENDING)
   notes          String?
   createdBy      User          @relation(fields: [createdById], references: [id], onDelete: Restrict)
