@@ -32,6 +32,13 @@ enum ExpenseCategory {
   OTHER
 }
 
+enum Currency {
+  INR
+  USD
+  EUR
+  GBP
+}
+
 model User {
   id        String    @id @default(uuid())
   email     String    @unique
@@ -103,6 +110,32 @@ model Expense {
   @@index([date])
   @@index([category])
   @@map("expenses")
+}
+
+model AppSettings {
+  id                String    @id @default("singleton") // Only one settings record
+  currency          Currency  @default(INR)
+  maxPersonsPerClass Int      @default(10)
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+
+  classTimings      ClassTiming[]
+
+  @@map("app_settings")
+}
+
+model ClassTiming {
+  id            String      @id @default(uuid())
+  dayOfWeek     Int         // 0 = Sunday, 1 = Monday, ..., 6 = Saturday
+  startTime     String      // Format: "HH:MM" (e.g., "09:00")
+  endTime       String      // Format: "HH:MM" (e.g., "17:00")
+  settings      AppSettings @relation(fields: [settingsId], references: [id], onDelete: Cascade)
+  settingsId    String
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+
+  @@unique([settingsId, dayOfWeek])
+  @@map("class_timings")
 }
 
 // Better Auth required models
