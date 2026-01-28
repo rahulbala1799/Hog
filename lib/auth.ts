@@ -6,7 +6,9 @@ export const auth = betterAuth({
   database: prismaAdapter(prisma, {
     provider: 'postgresql',
   }),
-  baseURL: process.env.NEON_AUTH_BASE_URL || process.env.AUTH_URL || process.env.NEXTAUTH_URL,
+  baseURL: process.env.AUTH_URL || process.env.NEXTAUTH_URL || process.env.VERCEL_URL 
+    ? `https://${process.env.VERCEL_URL || process.env.AUTH_URL?.replace('https://', '')}` 
+    : 'http://localhost:3000',
   basePath: '/api/auth',
   emailAndPassword: {
     enabled: true,
