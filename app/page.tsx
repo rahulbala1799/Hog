@@ -70,16 +70,6 @@ export default function Home() {
               Sign in
             </button>
           </form>
-
-          {/* Footer */}
-          <div className="mt-6 text-center">
-            <p className="text-sm text-gray-600">
-              Don&apos;t have an account?{' '}
-              <a href="#" className="font-medium text-purple-600 hover:text-purple-500">
-                Contact administrator
-              </a>
-            </p>
-          </div>
         </div>
       </div>
     </div>
