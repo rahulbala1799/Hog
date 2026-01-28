@@ -155,7 +155,9 @@ export default function BookingModal({
 
   const handlePaxChange = (delta: number) => {
     const newValue = Math.max(1, formData.numberOfPeople + delta)
-    const available = formData.sessionTime ? remainingCapacity[formData.sessionTime] || 0 : maxCapacity
+    const available = formData.sessionTime 
+      ? remainingCapacity[formData.sessionTime] || maxCapacity
+      : maxCapacity
     if (newValue <= available) {
       setFormData({ ...formData, numberOfPeople: newValue })
     }
