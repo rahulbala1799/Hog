@@ -125,7 +125,7 @@ export default function BookingModal({
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({
+          body: JSON.stringify({
           studentName: formData.studentName,
           studentPhone: formData.studentPhone,
           studentEmail: formData.studentEmail || null,
@@ -133,6 +133,7 @@ export default function BookingModal({
           sessionDate: dateStr,
           sessionTime: formData.sessionTime,
           bookingType: formData.bookingType,
+          totalAmountPaid: formData.totalAmountPaid ? parseFloat(formData.totalAmountPaid) : null,
           status: 'CONFIRMED',
         }),
       })
@@ -194,11 +195,17 @@ export default function BookingModal({
   const availableSession1 = remainingCapacity.SESSION_1 ?? maxCapacity
   const availableSession2 = remainingCapacity.SESSION_2 ?? maxCapacity
 
+  // Calculate per person amount
+  const totalAmount = formData.totalAmountPaid ? parseFloat(formData.totalAmountPaid) : 0
+  const perPersonAmount = formData.numberOfPeople > 0 && totalAmount > 0
+    ? totalAmount / formData.numberOfPeople
+    : 0
+
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-2xl p-6 max-w-md w-full max-h-[90vh] overflow-y-auto">
-        <div className="flex items-center justify-between mb-6">
-          <h2 className="text-xl font-bold text-gray-900">Add Booking</h2>
+      <div className="bg-white rounded-2xl p-5 max-w-sm w-full max-h-[90vh] overflow-y-auto">
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-lg font-bold text-gray-900">Add Booking</h2>
           <button
             onClick={onClose}
             className="p-2 rounded-full hover:bg-gray-100 transition-colors"
@@ -220,8 +227,8 @@ export default function BookingModal({
         </div>
 
         {error && (
-          <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg">
-            <p className="text-sm text-red-800">{error}</p>
+          <div className="mb-3 p-2.5 bg-red-50 border border-red-200 rounded-lg">
+            <p className="text-xs text-red-800">{error}</p>
           </div>
         )}
 
