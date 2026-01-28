@@ -33,6 +33,7 @@ export default function BookingModal({
     studentPhone: '',
     studentEmail: '',
     numberOfPeople: 1,
+    sessionDate: selectedDate.toISOString().split('T')[0],
     sessionTime: '' as SessionTime | '',
     bookingType: 'REGULAR' as 'REGULAR' | 'GIFTS' | 'INFLUENCER',
     totalAmountPaid: '',
@@ -48,6 +49,7 @@ export default function BookingModal({
         studentPhone: '',
         studentEmail: '',
         numberOfPeople: 1,
+        sessionDate: selectedDate.toISOString().split('T')[0],
         sessionTime: '',
         bookingType: 'REGULAR',
         totalAmountPaid: '',
@@ -78,7 +80,7 @@ export default function BookingModal({
 
   const fetchCapacity = async () => {
     try {
-      const dateStr = selectedDate.toISOString().split('T')[0]
+      const dateStr = formData.sessionDate || selectedDate.toISOString().split('T')[0]
       const response = await fetch(`/api/sessions/capacity?date=${dateStr}`)
       if (response.ok) {
         const data = await response.json()
@@ -114,11 +116,11 @@ export default function BookingModal({
     setLoading(true)
     setError('')
 
-    if (!formData.studentName || !formData.studentPhone || !formData.sessionTime) {
-      setError('Name, Phone, and Time Slot are required')
-      setLoading(false)
-      return
-    }
+        if (!formData.studentName || !formData.studentPhone || !formData.sessionDate || !formData.sessionTime) {
+          setError('Name, Phone, Date, and Time Slot are required')
+          setLoading(false)
+          return
+        }
 
     // Check capacity
     const available = remainingCapacity[formData.sessionTime] || 0
@@ -128,9 +130,9 @@ export default function BookingModal({
       return
     }
 
-    try {
-      const dateStr = selectedDate.toISOString().split('T')[0]
-      const response = await fetch('/api/bookings', {
+        try {
+          const dateStr = formData.sessionDate || selectedDate.toISOString().split('T')[0]
+          const response = await fetch('/api/bookings', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -294,6 +296,23 @@ export default function BookingModal({
               }
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none transition text-sm"
               placeholder="student@example.com"
+            />
+          </div>
+
+          {/* Session Date */}
+          <div>
+            <label className="block text-xs font-medium text-gray-700 mb-1.5">
+              Date *
+            </label>
+            <input
+              type="date"
+              required
+              value={formData.sessionDate}
+              onChange={(e) => {
+                setFormData({ ...formData, sessionDate: e.target.value })
+              }}
+              min={new Date().toISOString().split('T')[0]}
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none transition text-sm"
             />
           </div>
 
