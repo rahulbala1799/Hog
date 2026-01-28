@@ -163,22 +163,30 @@ export default function BookingModal({
           return
         }
 
-    // Check capacity
-    const available = remainingCapacity[formData.sessionTime] || 0
-    if (formData.numberOfPeople > available) {
-      setError(`Only ${available} spot${available !== 1 ? 's' : ''} available for this session`)
-      setLoading(false)
-      return
+    // Check capacity (for new bookings or when changing date/time/people in edit mode)
+    if (!isEditMode || 
+        formData.sessionDate !== booking!.sessionDate.split('T')[0] ||
+        formData.sessionTime !== booking!.sessionTime ||
+        formData.numberOfPeople !== booking!.numberOfPeople) {
+      const available = remainingCapacity[formData.sessionTime] || 0
+      if (formData.numberOfPeople > available) {
+        setError(`Only ${available} spot${available !== 1 ? 's' : ''} available for this session`)
+        setLoading(false)
+        return
+      }
     }
 
-        try {
-          const dateStr = formData.sessionDate || selectedDate.toISOString().split('T')[0]
-          const response = await fetch('/api/bookings', {
-        method: 'POST',
+    try {
+      const dateStr = formData.sessionDate || selectedDate.toISOString().split('T')[0]
+      const url = isEditMode ? `/api/bookings/${booking!.id}` : '/api/bookings'
+      const method = isEditMode ? 'PUT' : 'POST'
+      
+      const response = await fetch(url, {
+        method,
         headers: {
           'Content-Type': 'application/json',
         },
-          body: JSON.stringify({
+        body: JSON.stringify({
           studentName: formData.studentName,
           studentPhone: formData.studentPhone,
           studentEmail: formData.studentEmail || null,
@@ -187,7 +195,7 @@ export default function BookingModal({
           sessionTime: formData.sessionTime,
           bookingType: formData.bookingType,
           totalAmountPaid: formData.totalAmountPaid ? parseFloat(formData.totalAmountPaid) : null,
-          status: 'CONFIRMED',
+          status: isEditMode ? booking!.status : 'CONFIRMED',
         }),
       })
 
@@ -197,11 +205,11 @@ export default function BookingModal({
         onSuccess()
         onClose()
       } else {
-        setError(data.error || 'Failed to create booking')
+        setError(data.error || `Failed to ${isEditMode ? 'update' : 'create'} booking`)
         setLoading(false)
       }
     } catch (err) {
-      setError('Failed to create booking')
+      setError(`Failed to ${isEditMode ? 'update' : 'create'} booking`)
       setLoading(false)
     }
   }
