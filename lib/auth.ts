@@ -70,4 +70,4 @@ export const authOptions: NextAuthOptions = {
 }
 
 // Export auth function for use in middleware and server components
-export const { auth, signIn, signOut } = NextAuth(authOptions)
+export const { auth, signIn, signOut, handlers } = NextAuth(authOptions)
