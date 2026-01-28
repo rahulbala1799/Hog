@@ -2,12 +2,11 @@
 
 import { createAuthClient } from 'better-auth/react'
 
-// When using Neon Auth (managed Better Auth service), point directly to the Neon Auth URL
-// No basePath needed since Neon Auth handles the routing
+// Use our local Better Auth API route instead of Neon Auth
+// This allows us to authenticate users from our own database
 export const authClient = createAuthClient({
-  baseURL: process.env.NEXT_PUBLIC_NEON_AUTH_URL || 
-    (typeof window !== 'undefined' ? window.location.origin : 'http://localhost:3000'),
-  // No basePath when using Neon Auth - it handles all routes
+  baseURL: typeof window !== 'undefined' ? window.location.origin : 'http://localhost:3000',
+  basePath: '/api/auth', // Use our local API route
 })
 
 export const { signIn, signOut, signUp, useSession } = authClient
