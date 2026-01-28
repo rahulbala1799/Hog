@@ -1,33 +1,102 @@
 'use client'
 
-import { useRouter } from 'next/navigation'
-import { useState } from 'react'
+import { useRouter, useSearchParams } from 'next/navigation'
+import { useState, useEffect, Suspense } from 'react'
 
-export default function NewBookingPage() {
+function NewBookingForm() {
   const router = useRouter()
+  const searchParams = useSearchParams()
   const [loading, setLoading] = useState(false)
+  const [error, setError] = useState('')
+  const [maxCapacity, setMaxCapacity] = useState(10)
+  const [remainingCapacity, setRemainingCapacity] = useState<number | null>(null)
+  
+  const prefilledDate = searchParams.get('date') || ''
+  const prefilledSession = searchParams.get('session') || ''
+
   const [formData, setFormData] = useState({
     studentName: '',
     studentEmail: '',
     studentPhone: '',
-    classTypeId: '',
-    classDate: '',
-    classTime: '',
+    numberOfPeople: 1,
+    sessionDate: prefilledDate,
+    sessionTime: prefilledSession,
     status: 'PENDING',
     notes: '',
   })
 
+  useEffect(() => {
+    fetchSettings()
+  }, [])
+
+  useEffect(() => {
+    if (formData.sessionDate && formData.sessionTime) {
+      checkCapacity()
+    }
+  }, [formData.sessionDate, formData.sessionTime])
+
+  const fetchSettings = async () => {
+    try {
+      const response = await fetch('/api/settings')
+      if (response.ok) {
+        const data = await response.json()
+        setMaxCapacity(data.settings.maxPersonsPerClass)
+      }
+    } catch (err) {
+      console.error('Failed to fetch settings')
+    }
+  }
+
+  const checkCapacity = async () => {
+    try {
+      const response = await fetch(
+        `/api/sessions/capacity?date=${formData.sessionDate}`
+      )
+      if (response.ok) {
+        const data = await response.json()
+        const session = data.sessions[0]
+        if (session) {
+          const capacity =
+            formData.sessionTime === 'SESSION_1'
+              ? session.session1
+              : session.session2
+          setRemainingCapacity(capacity.available)
+        } else {
+          setRemainingCapacity(maxCapacity)
+        }
+      }
+    } catch (err) {
+      console.error('Failed to check capacity')
+    }
+  }
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setLoading(true)
+    setError('')
 
-    // TODO: Submit to API
-    console.log('Form data:', formData)
+    try {
+      const response = await fetch('/api/bookings', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(formData),
+      })
 
-    setTimeout(() => {
+      const data = await response.json()
+
+      if (response.ok) {
+        router.push('/dashboard/calendar')
+        router.refresh()
+      } else {
+        setError(data.error || 'Failed to create booking')
+        setLoading(false)
+      }
+    } catch (err) {
+      setError('Failed to create booking')
       setLoading(false)
-      router.push('/dashboard/bookings')
-    }, 1000)
+    }
   }
 
   const handleChange = (
@@ -37,6 +106,15 @@ export default function NewBookingPage() {
       ...formData,
       [e.target.name]: e.target.value,
     })
+  }
+
+  const handlePaxChange = (delta: number) => {
+    const newValue = Math.max(1, formData.numberOfPeople + delta)
+    if (remainingCapacity !== null && newValue <= remainingCapacity) {
+      setFormData({ ...formData, numberOfPeople: newValue })
+    } else if (remainingCapacity === null) {
+      setFormData({ ...formData, numberOfPeople: newValue })
+    }
   }
 
   return (
@@ -74,6 +152,12 @@ export default function NewBookingPage() {
       {/* Form */}
       <main className="px-4 py-6 pb-24">
         <form onSubmit={handleSubmit} className="space-y-6">
+          {error && (
+            <div className="p-4 bg-red-50 border border-red-200 rounded-lg">
+              <p className="text-sm text-red-800">{error}</p>
+            </div>
+          )}
+
           {/* Student Information */}
           <div className="card p-5">
             <h2 className="text-lg font-semibold text-gray-900 mb-4">
@@ -138,71 +222,96 @@ export default function NewBookingPage() {
             </div>
           </div>
 
-          {/* Class Details */}
+          {/* Session Details */}
           <div className="card p-5">
             <h2 className="text-lg font-semibold text-gray-900 mb-4">
-              Class Details
+              Session Details
             </h2>
 
             <div className="space-y-4">
               <div>
                 <label
-                  htmlFor="classTypeId"
+                  htmlFor="sessionDate"
                   className="block text-sm font-medium text-gray-700 mb-2"
                 >
-                  Class Type *
+                  Date *
+                </label>
+                <input
+                  type="date"
+                  id="sessionDate"
+                  name="sessionDate"
+                  required
+                  value={formData.sessionDate}
+                  onChange={handleChange}
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#8B7355] focus:border-transparent outline-none transition text-base"
+                />
+              </div>
+
+              <div>
+                <label
+                  htmlFor="sessionTime"
+                  className="block text-sm font-medium text-gray-700 mb-2"
+                >
+                  Session *
                 </label>
                 <select
-                  id="classTypeId"
-                  name="classTypeId"
+                  id="sessionTime"
+                  name="sessionTime"
                   required
-                  value={formData.classTypeId}
+                  value={formData.sessionTime}
                   onChange={handleChange}
                   className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#8B7355] focus:border-transparent outline-none transition text-base bg-white"
                 >
-                  <option value="">Select a class type</option>
-                  <option value="1">Beginner Makeup - ₹3000</option>
-                  <option value="2">Advanced Techniques - ₹5000</option>
-                  <option value="3">Bridal Makeup - ₹4500</option>
+                  <option value="">Select a session</option>
+                  <option value="SESSION_1">Session 1 (7:00 PM - 8:00 PM)</option>
+                  <option value="SESSION_2">Session 2 (9:00 PM - 10:00 PM)</option>
                 </select>
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label
-                    htmlFor="classDate"
-                    className="block text-sm font-medium text-gray-700 mb-2"
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Number of People (PAX) *
+                </label>
+                <div className="flex items-center gap-4">
+                  <button
+                    type="button"
+                    onClick={() => handlePaxChange(-1)}
+                    disabled={formData.numberOfPeople <= 1}
+                    className="w-12 h-12 rounded-full bg-gray-200 text-gray-700 font-bold text-xl hover:bg-gray-300 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                   >
-                    Date *
-                  </label>
-                  <input
-                    type="date"
-                    id="classDate"
-                    name="classDate"
-                    required
-                    value={formData.classDate}
-                    onChange={handleChange}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#8B7355] focus:border-transparent outline-none transition text-base"
-                  />
-                </div>
-
-                <div>
-                  <label
-                    htmlFor="classTime"
-                    className="block text-sm font-medium text-gray-700 mb-2"
+                    -
+                  </button>
+                  <div className="flex-1 text-center">
+                    <p className="text-3xl font-bold text-gray-900">
+                      {formData.numberOfPeople}
+                    </p>
+                    <p className="text-xs text-gray-600">
+                      {formData.numberOfPeople === 1 ? 'person' : 'people'}
+                    </p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => handlePaxChange(1)}
+                    disabled={
+                      remainingCapacity !== null &&
+                      formData.numberOfPeople >= remainingCapacity
+                    }
+                    className="w-12 h-12 rounded-full bg-purple-600 text-white font-bold text-xl hover:bg-purple-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                   >
-                    Time *
-                  </label>
-                  <input
-                    type="time"
-                    id="classTime"
-                    name="classTime"
-                    required
-                    value={formData.classTime}
-                    onChange={handleChange}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#8B7355] focus:border-transparent outline-none transition text-base"
-                  />
+                    +
+                  </button>
                 </div>
+                {remainingCapacity !== null && (
+                  <p
+                    className={`text-sm mt-2 text-center ${
+                      remainingCapacity <= 3 ? 'text-orange-600' : 'text-gray-600'
+                    }`}
+                  >
+                    {remainingCapacity > 0
+                      ? `${remainingCapacity} spot${remainingCapacity !== 1 ? 's' : ''} remaining`
+                      : 'Session is full'}
+                  </p>
+                )}
               </div>
 
               <div>
@@ -249,13 +358,28 @@ export default function NewBookingPage() {
           {/* Submit Button */}
           <button
             type="submit"
-            disabled={loading}
-            className="w-full btn-primary"
+            disabled={loading || remainingCapacity === 0}
+            className="w-full btn-primary disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {loading ? 'Creating Booking...' : 'Create Booking'}
           </button>
         </form>
       </main>
     </div>
+  )
+}
+
+export default function NewBookingPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600 mx-auto"></div>
+          <p className="mt-4 text-gray-600">Loading...</p>
+        </div>
+      </div>
+    }>
+      <NewBookingForm />
+    </Suspense>
   )
 }

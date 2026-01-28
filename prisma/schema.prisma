@@ -22,6 +22,11 @@ enum BookingStatus {
   CANCELLED
 }
 
+enum SessionTime {
+  SESSION_1  // 7:00 PM - 8:00 PM
+  SESSION_2  // 9:00 PM - 10:00 PM
+}
+
 enum ExpenseCategory {
   ART_SUPPLIES
   RENT
@@ -69,28 +74,27 @@ model ClassType {
   active      Boolean   @default(true)
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
-  
-  bookings    Booking[]
 
   @@map("class_types")
 }
 
 model Booking {
-  id           String        @id @default(uuid())
-  studentName  String
-  studentEmail String?
-  studentPhone String?
-  classDate    DateTime
-  classType    ClassType     @relation(fields: [classTypeId], references: [id], onDelete: Restrict)
-  classTypeId  String
-  status       BookingStatus @default(PENDING)
-  notes        String?
-  createdBy    User          @relation(fields: [createdById], references: [id], onDelete: Restrict)
-  createdById  String
-  createdAt    DateTime      @default(now())
-  updatedAt    DateTime      @updatedAt
+  id             String        @id @default(uuid())
+  studentName    String
+  studentEmail   String?
+  studentPhone   String?
+  numberOfPeople Int           @default(1) // PAX count
+  sessionDate    DateTime      // Date of the session
+  sessionTime    SessionTime   // SESSION_1 or SESSION_2
+  status         BookingStatus @default(PENDING)
+  notes          String?
+  createdBy      User          @relation(fields: [createdById], references: [id], onDelete: Restrict)
+  createdById    String
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
 
-  @@index([classDate])
+  @@index([sessionDate])
+  @@index([sessionDate, sessionTime])
   @@index([status])
   @@map("bookings")
 }
