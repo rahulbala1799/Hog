@@ -37,6 +37,7 @@ function SessionDetailContent() {
   const [error, setError] = useState('')
   const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null)
   const [editBooking, setEditBooking] = useState<Booking | null>(null)
+  const [showAddBookingModal, setShowAddBookingModal] = useState(false)
 
   const fetchSessionData = async () => {
     setLoading(true)
@@ -264,7 +265,7 @@ function SessionDetailContent() {
                     This session is available for booking
                   </p>
                   <button
-                    onClick={() => router.push(`/dashboard/bookings/new?date=${date}&session=${session}`)}
+                    onClick={() => setShowAddBookingModal(true)}
                     className="btn-primary"
                   >
                     + Add Booking
@@ -367,7 +368,7 @@ function SessionDetailContent() {
             {/* Actions */}
             <div className="space-y-3">
               <button
-                onClick={() => router.push(`/dashboard/bookings/new?date=${date}&session=${session}`)}
+                onClick={() => setShowAddBookingModal(true)}
                 className="w-full btn-primary"
                 disabled={capacity.percentage === 100}
               >
@@ -402,6 +403,20 @@ function SessionDetailContent() {
             </div>
           </div>
         </div>
+      )}
+
+      {/* Add Booking Modal */}
+      {showAddBookingModal && (
+        <BookingModal
+          isOpen={showAddBookingModal}
+          onClose={() => setShowAddBookingModal(false)}
+          selectedDate={date ? new Date(date) : new Date()}
+          initialSessionTime={session}
+          onSuccess={() => {
+            fetchSessionData()
+            setShowAddBookingModal(false)
+          }}
+        />
       )}
 
       {/* Edit Booking Modal */}

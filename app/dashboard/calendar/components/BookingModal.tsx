@@ -28,6 +28,7 @@ interface BookingModalProps {
   selectedDate: Date
   onSuccess: () => void
   booking?: Booking | null // Optional booking for edit mode
+  initialSessionTime?: SessionTime // Optional initial session time (for adding from session details)
 }
 
 export default function BookingModal({
@@ -36,6 +37,7 @@ export default function BookingModal({
   selectedDate,
   onSuccess,
   booking = null, // null means add mode, booking object means edit mode
+  initialSessionTime, // Optional initial session time
 }: BookingModalProps) {
   const isEditMode = !!booking
   const [loading, setLoading] = useState(false)
@@ -73,14 +75,14 @@ export default function BookingModal({
           totalAmountPaid: booking.totalAmountPaid ? booking.totalAmountPaid.toString() : '',
         })
       } else {
-        // Add mode - reset form
+        // Add mode - reset form, but use initialSessionTime if provided
         setFormData({
           studentName: '',
           studentPhone: '',
           studentEmail: '',
           numberOfPeople: 1,
           sessionDate: selectedDate.toISOString().split('T')[0],
-          sessionTime: '',
+          sessionTime: initialSessionTime || '',
           bookingType: 'REGULAR',
           totalAmountPaid: '',
         })
