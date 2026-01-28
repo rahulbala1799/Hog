@@ -1,10 +1,9 @@
 import type { Metadata } from 'next'
 import './globals.css'
-import { Providers } from './providers'
 
 export const metadata: Metadata = {
-  title: 'Art Business Management',
-  description: 'Manage your art business efficiently',
+  title: 'House of Glow - Login',
+  description: 'House of Glow business management',
 }
 
 export default function RootLayout({
@@ -14,9 +13,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body>
-        <Providers>{children}</Providers>
-      </body>
+      <body>{children}</body>
     </html>
   )
 }
