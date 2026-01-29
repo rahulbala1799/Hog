@@ -16,7 +16,7 @@ interface DashboardStats {
   todayPax: number
   upcomingBookings: number
   monthRevenue: number
-  weekBookings: number
+  weekPax: number
   recentActivity: string
 }
 
@@ -29,7 +29,7 @@ export default function Dashboard() {
     todayPax: 0,
     upcomingBookings: 0,
     monthRevenue: 0,
-    weekBookings: 0,
+    weekPax: 0,
     recentActivity: 'No recent activity'
   })
 
@@ -91,12 +91,16 @@ export default function Dashboard() {
             sum + (b.numberOfPeople || 0), 0
           )
           
+          const weekPax = weekBookings.reduce((sum: number, b: any) => 
+            sum + (b.numberOfPeople || 0), 0
+          )
+          
           setStats({
             todayBookings: todayBookings.length,
             todayPax,
             upcomingBookings: upcomingBookings.length,
             monthRevenue,
-            weekBookings: weekBookings.length,
+            weekPax,
             recentActivity: bookings.length > 0 ? `${bookings.length} total bookings` : 'No bookings yet'
           })
         }
@@ -264,9 +268,9 @@ export default function Dashboard() {
               <div className="text-xs text-white/70">{stats.todayPax} people</div>
             </div>
             <div className="bg-white/20 backdrop-blur-md rounded-2xl p-4 border border-white/30">
-              <div className="text-3xl font-bold text-white">{stats.weekBookings}</div>
-              <div className="text-xs text-white/90 font-medium mt-1">This Week</div>
-              <div className="text-xs text-white/70">bookings</div>
+              <div className="text-3xl font-bold text-white">{stats.weekPax}</div>
+              <div className="text-xs text-white/90 font-medium mt-1">People This Week</div>
+              <div className="text-xs text-white/70">total pax</div>
             </div>
             {!isStaff && (
               <div className="bg-white/20 backdrop-blur-md rounded-2xl p-4 border border-white/30">
