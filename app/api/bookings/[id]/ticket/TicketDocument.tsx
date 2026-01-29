@@ -1,47 +1,47 @@
 import React from 'react'
 import { Document, Page, Text, View, Image, StyleSheet } from '@react-pdf/renderer'
 
-// Create styles for a beautiful ticket
+// Create styles optimized for mobile preview
 const styles = StyleSheet.create({
   page: {
-    width: 400,
-    height: 500, // Reduced from 594
+    width: 350,  // Optimized for mobile screens
+    height: 500,
     backgroundColor: '#FFFFFF',
   },
   // Simplified header
   headerContainer: {
     backgroundColor: '#7C3AED',
-    paddingTop: 30,
-    paddingBottom: 25,
-    paddingHorizontal: 35,
+    paddingTop: 28,
+    paddingBottom: 22,
+    paddingHorizontal: 30,
   },
   brandName: {
-    fontSize: 32,
+    fontSize: 28,
     fontWeight: 'bold',
     color: '#FFFFFF',
-    letterSpacing: 3,
+    letterSpacing: 2.5,
     textAlign: 'center',
   },
   // Main content
   mainContent: {
     flex: 1,
-    paddingHorizontal: 30,
-    paddingTop: 25,
+    paddingHorizontal: 25,
+    paddingTop: 22,
   },
-  // Issue number - prominent
+  // Issue number
   issueNumberContainer: {
     alignItems: 'center',
-    marginBottom: 20,
+    marginBottom: 18,
   },
   issueNumberLabel: {
-    fontSize: 9,
+    fontSize: 8,
     color: '#9CA3AF',
     letterSpacing: 1,
     marginBottom: 5,
     textTransform: 'uppercase',
   },
   issueNumber: {
-    fontSize: 22,
+    fontSize: 20,
     fontWeight: 'bold',
     color: '#7C3AED',
     letterSpacing: 2,
@@ -49,22 +49,22 @@ const styles = StyleSheet.create({
   // Guest section
   guestSection: {
     backgroundColor: '#F9FAFB',
-    borderRadius: 12,
-    padding: 16,
-    marginBottom: 16,
+    borderRadius: 10,
+    padding: 14,
+    marginBottom: 14,
   },
   sectionLabel: {
-    fontSize: 8,
+    fontSize: 7,
     color: '#6B7280',
-    letterSpacing: 1,
-    marginBottom: 6,
+    letterSpacing: 0.8,
+    marginBottom: 5,
     textTransform: 'uppercase',
   },
   guestName: {
-    fontSize: 18,
+    fontSize: 16,
     fontWeight: 'bold',
     color: '#111827',
-    marginBottom: 10,
+    marginBottom: 9,
   },
   guestDetails: {
     flexDirection: 'row',
@@ -73,17 +73,16 @@ const styles = StyleSheet.create({
   guestDetailItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginRight: 20,
   },
   detailIcon: {
-    width: 14,
-    height: 14,
+    width: 12,
+    height: 12,
     backgroundColor: '#7C3AED',
-    borderRadius: 7,
-    marginRight: 6,
+    borderRadius: 6,
+    marginRight: 5,
   },
   detailText: {
-    fontSize: 11,
+    fontSize: 10,
     color: '#374151',
     fontWeight: 'bold',
   },
@@ -91,75 +90,75 @@ const styles = StyleSheet.create({
   sessionGrid: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    marginBottom: 16,
+    marginBottom: 14,
   },
   sessionCard: {
     flex: 1,
     backgroundColor: '#FFFFFF',
     borderWidth: 1,
     borderColor: '#E5E7EB',
-    borderRadius: 10,
-    padding: 12,
-    marginHorizontal: 4,
+    borderRadius: 8,
+    padding: 10,
+    marginHorizontal: 3,
   },
   sessionLabel: {
-    fontSize: 8,
+    fontSize: 7,
     color: '#9CA3AF',
-    letterSpacing: 1,
-    marginBottom: 5,
+    letterSpacing: 0.8,
+    marginBottom: 4,
     textTransform: 'uppercase',
   },
   sessionValue: {
-    fontSize: 11,
+    fontSize: 10,
     color: '#1F2937',
     fontWeight: 'bold',
     lineHeight: 1.3,
   },
-  // QR section - compact
+  // QR section
   qrSection: {
     backgroundColor: '#F9FAFB',
-    borderRadius: 12,
-    padding: 14,
+    borderRadius: 10,
+    padding: 12,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    marginTop: 10,
+    marginTop: 8,
   },
   qrLeft: {
     flex: 1,
-    marginRight: 12,
+    marginRight: 10,
   },
   qrTitle: {
-    fontSize: 11,
+    fontSize: 10,
     fontWeight: 'bold',
     color: '#111827',
-    marginBottom: 4,
+    marginBottom: 3,
   },
   qrDescription: {
-    fontSize: 8,
+    fontSize: 7,
     color: '#6B7280',
-    lineHeight: 1.4,
+    lineHeight: 1.3,
   },
   qrCodeImage: {
-    width: 75,
-    height: 75,
-    borderRadius: 8,
+    width: 65,
+    height: 65,
+    borderRadius: 6,
   },
   // Footer
   footer: {
     position: 'absolute',
-    bottom: 20,
-    left: 30,
-    right: 30,
+    bottom: 18,
+    left: 25,
+    right: 25,
     borderTopWidth: 1,
     borderTopColor: '#E5E7EB',
-    paddingTop: 12,
+    paddingTop: 10,
   },
   footerText: {
     fontSize: 7,
     color: '#9CA3AF',
     textAlign: 'center',
-    lineHeight: 1.4,
+    lineHeight: 1.3,
   },
 })
 
@@ -174,8 +173,8 @@ interface TicketData {
 
 const TicketDocument = (data: TicketData) => (
   <Document>
-    <Page size={{ width: 400, height: 500 }} style={styles.page}>
-      {/* Simplified Header */}
+    <Page size={{ width: 350, height: 500 }} style={styles.page}>
+      {/* Header */}
       <View style={styles.headerContainer}>
         <Text style={styles.brandName}>HOUSE OF GLOW</Text>
       </View>

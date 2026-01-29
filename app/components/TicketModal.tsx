@@ -12,7 +12,8 @@ export default function TicketModal({ bookingId, isOpen, onClose }: TicketModalP
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
   const [ticketData, setTicketData] = useState<{
-    url: string
+    pdfUrl: string
+    previewUrl: string
     filename: string
     issueNumber: string
     guestName: string
@@ -29,7 +30,7 @@ export default function TicketModal({ bookingId, isOpen, onClose }: TicketModalP
     setLoading(true)
     setError('')
     try {
-      const response = await fetch(`/api/bookings/${bookingId}/ticket`)
+      const response = await fetch(`/api/bookings/${bookingId}/ticket?format=preview`)
       if (!response.ok) throw new Error('Failed to generate ticket')
       
       const data = await response.json()
@@ -45,7 +46,7 @@ export default function TicketModal({ bookingId, isOpen, onClose }: TicketModalP
   const handleDownload = () => {
     if (ticketData) {
       const link = document.createElement('a')
-      link.href = ticketData.url
+      link.href = ticketData.pdfUrl
       link.download = ticketData.filename
       link.click()
     }
@@ -55,14 +56,14 @@ export default function TicketModal({ bookingId, isOpen, onClose }: TicketModalP
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-60 backdrop-blur-sm p-2 sm:p-4">
-      <div className="relative bg-white rounded-2xl sm:rounded-3xl shadow-2xl w-full max-w-md sm:max-w-2xl max-h-[95vh] flex flex-col overflow-hidden">
+      <div className="relative bg-white rounded-2xl sm:rounded-3xl shadow-2xl w-full max-w-md max-h-[95vh] flex flex-col overflow-hidden">
         {/* Header */}
-        <div className="bg-gradient-to-r from-purple-600 to-pink-600 px-4 sm:px-6 py-4 sm:py-5 flex items-center justify-between flex-shrink-0">
+        <div className="bg-gradient-to-r from-purple-600 to-pink-600 px-4 sm:px-6 py-4 flex items-center justify-between flex-shrink-0">
           <div className="min-w-0 flex-1">
-            <h2 className="text-lg sm:text-2xl font-bold text-white truncate">Admission Ticket</h2>
+            <h2 className="text-lg sm:text-xl font-bold text-white truncate">Your Ticket</h2>
             {ticketData && (
               <p className="text-purple-100 text-xs sm:text-sm mt-1 truncate">
-                {ticketData.issueNumber} • {ticketData.guestName}
+                {ticketData.issueNumber}
               </p>
             )}
           </div>
@@ -77,9 +78,9 @@ export default function TicketModal({ bookingId, isOpen, onClose }: TicketModalP
         </div>
 
         {/* Content */}
-        <div className="flex-1 overflow-y-auto p-3 sm:p-6">
+        <div className="flex-1 overflow-hidden flex flex-col p-4 sm:p-6">
           {loading ? (
-            <div className="flex flex-col items-center justify-center py-16 sm:py-20">
+            <div className="flex flex-col items-center justify-center py-16 sm:py-20 flex-1">
               <div className="relative">
                 <div className="w-12 h-12 sm:w-16 sm:h-16 border-4 border-purple-200 rounded-full"></div>
                 <div className="absolute inset-0 w-12 h-12 sm:w-16 sm:h-16 border-4 border-purple-600 rounded-full animate-spin border-t-transparent"></div>
@@ -87,13 +88,13 @@ export default function TicketModal({ bookingId, isOpen, onClose }: TicketModalP
               <p className="mt-4 sm:mt-6 text-gray-600 font-medium text-sm sm:text-base">Generating your ticket...</p>
             </div>
           ) : error ? (
-            <div className="flex flex-col items-center justify-center py-16 sm:py-20">
+            <div className="flex flex-col items-center justify-center py-16 sm:py-20 flex-1">
               <div className="w-12 h-12 sm:w-16 sm:h-16 bg-red-100 rounded-full flex items-center justify-center mb-4">
                 <svg className="w-6 h-6 sm:w-8 sm:h-8 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                 </svg>
               </div>
-              <p className="text-red-600 font-medium text-sm sm:text-base">{error}</p>
+              <p className="text-red-600 font-medium text-sm sm:text-base text-center px-4">{error}</p>
               <button
                 onClick={fetchTicket}
                 className="mt-4 px-4 sm:px-6 py-2 bg-purple-600 text-white rounded-xl text-sm sm:text-base font-semibold hover:bg-purple-700 transition-colors"
@@ -102,37 +103,42 @@ export default function TicketModal({ bookingId, isOpen, onClose }: TicketModalP
               </button>
             </div>
           ) : ticketData ? (
-            <div className="flex flex-col h-full">
-              {/* PDF Preview - optimized for mobile */}
-              <div className="bg-gray-100 rounded-xl sm:rounded-2xl overflow-hidden mb-3 sm:mb-6 flex-1 min-h-0">
-                <iframe
-                  src={`${ticketData.url}#view=FitH`}
-                  className="w-full h-full"
-                  title="Ticket Preview"
-                  style={{ minHeight: '400px' }}
-                />
+            <div className="flex flex-col flex-1">
+              {/* PDF Preview - perfectly scaled */}
+              <div className="flex-1 bg-gray-50 rounded-xl sm:rounded-2xl overflow-hidden mb-4 flex items-center justify-center p-2">
+                <div className="w-full h-full flex items-center justify-center">
+                  <iframe
+                    src={`${ticketData.previewUrl}#view=Fit&toolbar=0&navpanes=0&scrollbar=0&zoom=page-fit`}
+                    className="w-full h-full border-0 rounded-lg"
+                    title="Ticket Preview"
+                    style={{
+                      minHeight: '450px',
+                      maxHeight: '600px',
+                    }}
+                  />
+                </div>
               </div>
 
               {/* Action Buttons */}
               <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 flex-shrink-0">
                 <button
                   onClick={handleDownload}
-                  className="flex-1 px-4 sm:px-6 py-3 sm:py-3.5 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-xl font-bold shadow-lg hover:shadow-xl transition-all transform active:scale-95 flex items-center justify-center gap-2 text-sm sm:text-base"
+                  className="flex-1 px-4 sm:px-6 py-3 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-xl font-bold shadow-lg hover:shadow-xl transition-all transform active:scale-95 flex items-center justify-center gap-2 text-sm sm:text-base"
                 >
                   <svg className="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
                   </svg>
-                  Download Ticket
+                  Download PDF
                 </button>
                 <button
-                  onClick={() => window.open(ticketData.url, '_blank')}
-                  className="px-4 sm:px-6 py-3 sm:py-3.5 bg-white border-2 border-purple-600 text-purple-600 rounded-xl font-bold hover:bg-purple-50 transition-colors flex items-center justify-center gap-2 text-sm sm:text-base"
+                  onClick={() => window.open(ticketData.pdfUrl, '_blank')}
+                  className="px-4 sm:px-6 py-3 bg-white border-2 border-purple-600 text-purple-600 rounded-xl font-bold hover:bg-purple-50 transition-colors flex items-center justify-center gap-2 text-sm sm:text-base"
                 >
                   <svg className="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
                   </svg>
-                  <span className="hidden sm:inline">Open in New Tab</span>
-                  <span className="sm:hidden">Open</span>
+                  <span className="hidden sm:inline">Open</span>
+                  <span className="sm:hidden">View</span>
                 </button>
               </div>
             </div>

@@ -16,6 +16,8 @@ export async function GET(
 ) {
   try {
     const bookingId = params.id
+    const searchParams = request.nextUrl.searchParams
+    const format = searchParams.get('format') // 'pdf' or 'preview'
 
     // Fetch booking details
     const booking = await prisma.booking.findUnique({
@@ -61,19 +63,33 @@ export async function GET(
     // Generate PDF buffer
     const pdfBuffer = await renderToBuffer(TicketDocument(ticketData))
 
-    // Upload to Vercel Blob
-    const filename = `tickets/${booking.issueNumber}-${Date.now()}.pdf`
-    const blob = await put(filename, pdfBuffer, {
-      access: 'public',
-      contentType: 'application/pdf',
-    })
+    // If format is 'preview', return JSON with both URLs
+    if (format === 'preview') {
+      // Upload PDF to Vercel Blob
+      const pdfFilename = `tickets/${booking.issueNumber}-${Date.now()}.pdf`
+      const pdfBlob = await put(pdfFilename, pdfBuffer, {
+        access: 'public',
+        contentType: 'application/pdf',
+      })
 
-    // Return the blob URL
-    return NextResponse.json({
-      url: blob.url,
-      filename: `ticket-${booking.issueNumber}.pdf`,
-      issueNumber: booking.issueNumber,
-      guestName: booking.studentName,
+      // Return URLs for both preview and download
+      return NextResponse.json({
+        pdfUrl: pdfBlob.url,
+        previewUrl: pdfBlob.url,
+        filename: `ticket-${booking.issueNumber}.pdf`,
+        issueNumber: booking.issueNumber,
+        guestName: booking.studentName,
+      })
+    }
+
+    // Default: return PDF directly for download
+    return new NextResponse(pdfBuffer as any, {
+      status: 200,
+      headers: {
+        'Content-Type': 'application/pdf',
+        'Content-Disposition': `attachment; filename="ticket-${booking.issueNumber}.pdf"`,
+        'Content-Length': pdfBuffer.length.toString(),
+      },
     })
   } catch (error) {
     console.error('Error generating ticket:', error)
