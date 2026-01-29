@@ -80,7 +80,7 @@ export default function ReportsPage() {
     setLoading(true)
     try {
       const [bookingsRes, inventoryRes, expensesRes, settingsRes, costOfSaleRes] = await Promise.all([
-        fetch('/api/bookings'),
+        fetch('/api/bookings?pageSize=9999'), // Fetch all bookings for accurate calculations
         fetch('/api/inventory'),
         fetch('/api/expenses'),
         fetch('/api/settings'),
