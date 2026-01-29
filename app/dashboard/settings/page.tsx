@@ -25,6 +25,12 @@ export default function SettingsPage() {
       description: 'Set app currency',
       href: '/dashboard/settings/currency',
     },
+    {
+      title: 'Expense Categories',
+      icon: '📁',
+      description: 'Add and manage expense categories',
+      href: '/dashboard/settings/expense-categories',
+    },
   ]
 
   return (
