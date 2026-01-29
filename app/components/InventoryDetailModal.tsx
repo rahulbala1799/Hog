@@ -1,24 +1,41 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import InventoryPurchaseModal from './InventoryPurchaseModal'
 
 interface InventoryDetailModalProps {
   isOpen: boolean
   onClose: () => void
   itemId: string | null
+  onRefresh?: () => void
 }
 
-export default function InventoryDetailModal({ isOpen, onClose, itemId }: InventoryDetailModalProps) {
+export default function InventoryDetailModal({ isOpen, onClose, itemId, onRefresh }: InventoryDetailModalProps) {
   const [item, setItem] = useState<any>(null)
   const [loading, setLoading] = useState(true)
   const [activeTab, setActiveTab] = useState<'details' | 'price-history' | 'logs'>('details')
+  const [isPurchaseModalOpen, setIsPurchaseModalOpen] = useState(false)
+  const [userRole, setUserRole] = useState<string>('STAFF')
 
   useEffect(() => {
     if (isOpen && itemId) {
       fetchItemDetails()
+      fetchUser()
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isOpen, itemId])
+
+  const fetchUser = async () => {
+    try {
+      const response = await fetch('/api/auth/me')
+      if (response.ok) {
+        const data = await response.json()
+        setUserRole(data.user.role)
+      }
+    } catch (error) {
+      console.error('Failed to fetch user:', error)
+    }
+  }
 
   const fetchItemDetails = async () => {
     if (!itemId) return
@@ -40,6 +57,14 @@ export default function InventoryDetailModal({ isOpen, onClose, itemId }: Invent
   if (!isOpen) return null
 
   const isLowStock = item && item.reorderLevel && item.currentStock <= item.reorderLevel
+  const isAdmin = userRole === 'ADMIN'
+
+  const handlePurchaseSuccess = () => {
+    fetchItemDetails()
+    if (onRefresh) {
+      onRefresh()
+    }
+  }
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-60 backdrop-blur-sm p-4">
@@ -105,6 +130,21 @@ export default function InventoryDetailModal({ isOpen, onClose, itemId }: Invent
 
             {/* Content */}
             <div className="p-6 overflow-y-auto max-h-[calc(90vh-180px)]">
+              {/* Add Purchase Button for Admins */}
+              {activeTab === 'details' && isAdmin && (
+                <div className="mb-6">
+                  <button
+                    onClick={() => setIsPurchaseModalOpen(true)}
+                    className="w-full px-6 py-4 bg-gradient-to-r from-green-500 to-emerald-600 text-white rounded-2xl text-base font-bold hover:shadow-xl transition-all flex items-center justify-center gap-2"
+                  >
+                    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                    </svg>
+                    Add Purchase
+                  </button>
+                </div>
+              )}
+
               {activeTab === 'details' && (
                 <div className="space-y-6">
                   {/* Name and Description */}
@@ -255,6 +295,22 @@ export default function InventoryDetailModal({ isOpen, onClose, itemId }: Invent
           </>
         )}
       </div>
+
+      {/* Purchase Modal */}
+      {item && (
+        <InventoryPurchaseModal
+          isOpen={isPurchaseModalOpen}
+          onClose={() => setIsPurchaseModalOpen(false)}
+          onSuccess={handlePurchaseSuccess}
+          inventoryItem={{
+            id: item.id,
+            name: item.name,
+            unit: item.unit,
+            currentStock: item.currentStock,
+            currentCost: item.currentCost,
+          }}
+        />
+      )}
     </div>
   )
 }

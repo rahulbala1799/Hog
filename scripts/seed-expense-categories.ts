@@ -6,6 +6,7 @@ async function main() {
   console.log('Seeding expense categories...')
 
   const categories = [
+    'Cost of Sale',
     'Cost Of Sale',
     'Rent',
     'Marketing',

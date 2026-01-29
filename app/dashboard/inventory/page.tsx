@@ -316,6 +316,7 @@ export default function InventoryPage() {
           setSelectedItemId(null)
         }}
         itemId={selectedItemId}
+        onRefresh={fetchItems}
       />
     </div>
   )

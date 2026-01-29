@@ -151,18 +151,23 @@ export default function ReportsPage() {
         item.reorderLevel && item.currentStock <= item.reorderLevel
       ).length
 
-      // Expense calculations
-      const totalExpenses = expenses.reduce((sum: number, e: any) => sum + e.amount, 0)
-      const monthExpenses = expenses
+      // Expense calculations (exclude Cost of Sale category)
+      const expensesWithoutCOS = expenses.filter((e: any) => {
+        const categoryName = e.category?.name || ''
+        return categoryName !== 'Cost of Sale' && categoryName !== 'Cost Of Sale'
+      })
+      
+      const totalExpenses = expensesWithoutCOS.reduce((sum: number, e: any) => sum + e.amount, 0)
+      const monthExpenses = expensesWithoutCOS
         .filter((e: any) => new Date(e.date) >= startOfMonth)
         .reduce((sum: number, e: any) => sum + e.amount, 0)
-      const weekExpenses = expenses
+      const weekExpenses = expensesWithoutCOS
         .filter((e: any) => new Date(e.date) >= startOfWeek)
         .reduce((sum: number, e: any) => sum + e.amount, 0)
 
-      // Expenses by category
+      // Expenses by category (without Cost of Sale)
       const categoryMap = new Map()
-      expenses.forEach((e: any) => {
+      expensesWithoutCOS.forEach((e: any) => {
         const cat = e.category?.name || 'Uncategorized'
         if (!categoryMap.has(cat)) {
           categoryMap.set(cat, { category: cat, amount: 0, count: 0 })
