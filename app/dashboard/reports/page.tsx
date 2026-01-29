@@ -166,7 +166,7 @@ export default function ReportsPage() {
       })).sort((a: any, b: any) => b.value - a.value)
 
       // Cost of Sale calculations
-      const totalPax = confirmedBookings.reduce((sum: number, b: any) => sum + (b.numberOfPeople || 0), 0)
+      // totalPax already calculated above for capacity utilization
       const monthPax = monthBookings.reduce((sum: number, b: any) => sum + (b.numberOfPeople || 0), 0)
       
       const costOfSaleByItem = costOfSaleItems.map((cosItem: any) => {
