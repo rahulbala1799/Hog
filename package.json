@@ -15,7 +15,8 @@
     "db:delete-admin": "tsx scripts/delete-admin.ts",
     "db:migrate-users": "tsx scripts/migrate-users-to-accounts.ts",
     "db:seed-expense-categories": "tsx scripts/seed-expense-categories.ts",
-    "db:import-bookings-2026": "tsx scripts/import-bookings-2026.ts"
+    "db:import-bookings-2026": "tsx scripts/import-bookings-2026.ts",
+    "db:distribute-revenue": "tsx scripts/distribute-revenue.ts"
   },
   "dependencies": {
     "@prisma/client": "^5.7.1",

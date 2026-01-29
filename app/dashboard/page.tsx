@@ -141,6 +141,18 @@ export default function Dashboard() {
     return 'Good Evening'
   }
 
+  const formatRevenue = (amount: number): string => {
+    if (amount >= 1000000) {
+      return `${(amount / 1000000).toFixed(1)}M`
+    }
+    if (amount >= 1000) {
+      // Round to nearest thousand for cleaner display
+      const rounded = Math.round(amount / 1000)
+      return `${rounded}K`
+    }
+    return amount.toFixed(0)
+  }
+
   const sections = [
     {
       title: 'Bookings',
@@ -245,7 +257,7 @@ export default function Dashboard() {
               <div className="text-xs text-white/70">bookings</div>
             </div>
             <div className="bg-white/20 backdrop-blur-md rounded-2xl p-4 border border-white/30">
-              <div className="text-2xl font-bold text-white truncate">₹{stats.monthRevenue > 999 ? `${(stats.monthRevenue / 1000).toFixed(1)}k` : stats.monthRevenue}</div>
+              <div className="text-2xl font-bold text-white truncate">₹{formatRevenue(stats.monthRevenue)}</div>
               <div className="text-xs text-white/90 font-medium mt-1">Revenue</div>
               <div className="text-xs text-white/70">this month</div>
             </div>
