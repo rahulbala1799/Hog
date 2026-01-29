@@ -174,6 +174,15 @@ export default function Dashboard() {
       iconBg: 'bg-orange-100',
     },
     {
+      title: 'Inventory',
+      icon: '📦',
+      description: 'Manage stock & inventory',
+      href: '/dashboard/inventory',
+      gradient: 'from-indigo-500 to-purple-500',
+      bgGradient: 'from-indigo-50 to-purple-50',
+      iconBg: 'bg-indigo-100',
+    },
+    {
       title: 'Reports',
       icon: '📊',
       description: 'View analytics & insights',
