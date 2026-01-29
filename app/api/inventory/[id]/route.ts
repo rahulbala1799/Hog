@@ -1,8 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { PrismaClient, InventoryAction } from '@prisma/client'
+import { InventoryAction } from '@prisma/client'
 import { getUserFromRequest } from '@/lib/auth-helpers'
-
-const prisma = new PrismaClient()
+import { prisma } from '@/lib/db'
 
 export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'

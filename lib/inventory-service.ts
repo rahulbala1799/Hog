@@ -1,6 +1,5 @@
-import { PrismaClient, InventoryAction } from '@prisma/client'
-
-const prisma = new PrismaClient()
+import { InventoryAction } from '@prisma/client'
+import { prisma } from '@/lib/db'
 
 /**
  * Automatically deduct inventory based on booking
