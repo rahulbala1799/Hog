@@ -13,9 +13,10 @@ interface InventoryDetailModalProps {
 export default function InventoryDetailModal({ isOpen, onClose, itemId, onRefresh }: InventoryDetailModalProps) {
   const [item, setItem] = useState<any>(null)
   const [loading, setLoading] = useState(true)
-  const [activeTab, setActiveTab] = useState<'details' | 'price-history' | 'logs'>('details')
+  const [activeTab, setActiveTab] = useState<'details' | 'price-history' | 'logs' | 'purchases'>('details')
   const [isPurchaseModalOpen, setIsPurchaseModalOpen] = useState(false)
   const [userRole, setUserRole] = useState<string>('STAFF')
+  const [deletingPurchaseId, setDeletingPurchaseId] = useState<string | null>(null)
 
   useEffect(() => {
     if (isOpen && itemId) {
@@ -66,6 +67,44 @@ export default function InventoryDetailModal({ isOpen, onClose, itemId, onRefres
     }
   }
 
+  const handleDeletePurchase = async (logId: string) => {
+    if (!item || !confirm('Are you sure you want to reverse this purchase? This will restore the inventory to its previous state. You will also need to delete the corresponding expense from the Expenses page.')) {
+      return
+    }
+
+    setDeletingPurchaseId(logId)
+    try {
+      const response = await fetch(`/api/inventory/${item.id}/purchase/${logId}`, {
+        method: 'DELETE',
+      })
+
+      if (!response.ok) {
+        const data = await response.json()
+        alert(data.error || 'Failed to reverse purchase')
+        return
+      }
+
+      // Success - refresh item details
+      fetchItemDetails()
+      if (onRefresh) {
+        onRefresh()
+      }
+    } catch (error) {
+      console.error('Error reversing purchase:', error)
+      alert('Failed to reverse purchase')
+    } finally {
+      setDeletingPurchaseId(null)
+    }
+  }
+
+  // Filter purchase logs (STOCK_ADJUSTED with positive quantity and "Purchase:" in notes)
+  const purchaseLogs = item?.logs?.filter((log: any) => 
+    log.action === 'STOCK_ADJUSTED' && 
+    log.quantity > 0 && 
+    log.notes && 
+    log.notes.includes('Purchase:')
+  ) || []
+
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-60 backdrop-blur-sm p-4">
       <div className="bg-white rounded-3xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-hidden">
@@ -115,6 +154,16 @@ export default function InventoryDetailModal({ isOpen, onClose, itemId, onRefres
                 }`}
               >
                 Price History
+              </button>
+              <button
+                onClick={() => setActiveTab('purchases')}
+                className={`flex-1 px-6 py-4 font-semibold transition-colors ${
+                  activeTab === 'purchases'
+                    ? 'text-indigo-600 border-b-2 border-indigo-600'
+                    : 'text-gray-600 hover:text-gray-900'
+                }`}
+              >
+                Purchases
               </button>
               <button
                 onClick={() => setActiveTab('logs')}
@@ -246,6 +295,99 @@ export default function InventoryDetailModal({ isOpen, onClose, itemId, onRefres
                     ))
                   ) : (
                     <p className="text-center text-gray-500 py-8">No price history available</p>
+                  )}
+                </div>
+              )}
+
+              {activeTab === 'purchases' && (
+                <div className="space-y-3">
+                  {purchaseLogs.length > 0 ? (
+                    purchaseLogs.map((log: any) => {
+                      // Parse purchase details from notes
+                      const notesMatch = log.notes?.match(/Purchase: ([\d.]+) ([\w]+) @ ₹([\d.]+)\/([\w]+)(?: from (.+))?/)
+                      const quantity = log.quantity
+                      const unit = item.unit
+                      const perUnitCost = notesMatch ? parseFloat(notesMatch[3]) : 0
+                      const supplier = notesMatch?.[5] || null
+                      const totalCost = quantity * perUnitCost
+
+                      return (
+                        <div key={log.id} className="bg-gradient-to-r from-green-50 to-emerald-50 rounded-2xl p-4 border-2 border-green-200">
+                          <div className="flex items-start justify-between mb-3">
+                            <div className="flex-1">
+                              <div className="flex items-center gap-2 mb-2">
+                                <span className="px-3 py-1 bg-green-100 text-green-700 rounded-full text-xs font-bold">
+                                  Purchase
+                                </span>
+                                <span className="px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-xs font-bold">
+                                  +{quantity} {unit}
+                                </span>
+                              </div>
+                              <div className="space-y-1">
+                                <p className="text-sm text-gray-700">
+                                  <span className="font-semibold">Quantity:</span> {quantity} {unit}
+                                </p>
+                                <p className="text-sm text-gray-700">
+                                  <span className="font-semibold">Cost:</span> ₹{perUnitCost.toFixed(2)}/{unit}
+                                </p>
+                                <p className="text-sm text-gray-700">
+                                  <span className="font-semibold">Total:</span> ₹{totalCost.toFixed(2)}
+                                </p>
+                                {supplier && (
+                                  <p className="text-sm text-gray-700">
+                                    <span className="font-semibold">Supplier:</span> {supplier}
+                                  </p>
+                                )}
+                              </div>
+                            </div>
+                            {isAdmin && (
+                              <button
+                                onClick={() => handleDeletePurchase(log.id)}
+                                disabled={deletingPurchaseId === log.id}
+                                className="px-4 py-2 bg-red-50 text-red-600 rounded-xl font-semibold hover:bg-red-100 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                              >
+                                {deletingPurchaseId === log.id ? (
+                                  <>
+                                    <div className="w-4 h-4 border-2 border-red-600 border-t-transparent rounded-full animate-spin"></div>
+                                    Reversing...
+                                  </>
+                                ) : (
+                                  <>
+                                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                    </svg>
+                                    Reverse
+                                  </>
+                                )}
+                              </button>
+                            )}
+                          </div>
+                          <div className="pt-3 border-t border-green-200 flex items-center justify-between">
+                            <p className="text-xs text-gray-500">
+                              By: <span className="font-semibold">{log.performedBy.name}</span>
+                            </p>
+                            <p className="text-xs text-gray-500">
+                              {new Date(log.createdAt).toLocaleString()}
+                            </p>
+                          </div>
+                          {isAdmin && (
+                            <div className="mt-3 pt-3 border-t border-green-200">
+                              <p className="text-xs text-amber-600 font-semibold">
+                                ⚠️ Note: After reversing, delete the corresponding expense from the Expenses page
+                              </p>
+                            </div>
+                          )}
+                        </div>
+                      )
+                    })
+                  ) : (
+                    <div className="text-center py-12">
+                      <div className="w-16 h-16 bg-gradient-to-br from-green-100 to-emerald-100 rounded-3xl flex items-center justify-center mx-auto mb-4">
+                        <span className="text-3xl">📦</span>
+                      </div>
+                      <p className="text-gray-600 font-medium mb-2">No purchases yet</p>
+                      <p className="text-sm text-gray-500">Purchases will appear here once you add them</p>
+                    </div>
                   )}
                 </div>
               )}
