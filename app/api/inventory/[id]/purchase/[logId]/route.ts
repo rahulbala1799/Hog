@@ -54,6 +54,9 @@ export async function DELETE(
       )
     }
 
+    // Store quantity since we've validated it exists
+    const purchaseQuantity = log.quantity
+
     // Verify the log belongs to the correct inventory item
     if (log.itemId !== params.id) {
       return NextResponse.json(
@@ -118,7 +121,7 @@ export async function DELETE(
             stock: oldStock,
             cost: oldCost,
           }),
-          quantity: -log.quantity, // Negative to show reversal
+          quantity: -purchaseQuantity, // Negative to show reversal
           notes: `Purchase reversed: ${log.notes}`,
           performedById: user.id,
         },
