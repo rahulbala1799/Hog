@@ -33,6 +33,25 @@ export default function InventoryPage() {
   const [selectedItem, setSelectedItem] = useState<InventoryItem | null>(null)
   const [selectedItemId, setSelectedItemId] = useState<string | null>(null)
   const [searchQuery, setSearchQuery] = useState('')
+  const [userRole, setUserRole] = useState<string>('STAFF')
+
+  // Fetch user role
+  useEffect(() => {
+    const fetchUser = async () => {
+      try {
+        const response = await fetch('/api/auth/me')
+        if (response.ok) {
+          const data = await response.json()
+          setUserRole(data.user.role)
+        }
+      } catch (error) {
+        console.error('Failed to fetch user:', error)
+      }
+    }
+    fetchUser()
+  }, [])
+
+  const isStaff = userRole === 'STAFF'
 
   useEffect(() => {
     fetchItems()
@@ -137,15 +156,17 @@ export default function InventoryPage() {
         </div>
 
         {/* Stats */}
-        <div className="grid grid-cols-3 gap-2">
+        <div className={`grid gap-2 ${isStaff ? 'grid-cols-2' : 'grid-cols-3'}`}>
           <div className="bg-white/20 backdrop-blur-sm rounded-xl p-3">
             <p className="text-indigo-100 text-xs font-semibold mb-1">Items</p>
             <p className="text-2xl font-bold text-white">{formatNumber(items.length)}</p>
           </div>
-          <div className="bg-white/20 backdrop-blur-sm rounded-xl p-3">
-            <p className="text-indigo-100 text-xs font-semibold mb-1">Value</p>
-            <p className="text-2xl font-bold text-white">₹{formatNumber(totalValue)}</p>
-          </div>
+          {!isStaff && (
+            <div className="bg-white/20 backdrop-blur-sm rounded-xl p-3">
+              <p className="text-indigo-100 text-xs font-semibold mb-1">Value</p>
+              <p className="text-2xl font-bold text-white">₹{formatNumber(totalValue)}</p>
+            </div>
+          )}
           <div className="bg-white/20 backdrop-blur-sm rounded-xl p-3">
             <p className="text-indigo-100 text-xs font-semibold mb-1">Low</p>
             <p className="text-2xl font-bold text-white">{lowStockItems.length}</p>
@@ -228,21 +249,25 @@ export default function InventoryPage() {
                   </div>
 
                   {/* Stats */}
-                  <div className="grid grid-cols-3 gap-2 mb-3">
+                  <div className={`grid gap-2 mb-3 ${isStaff ? 'grid-cols-1' : 'grid-cols-3'}`}>
                     <div className="bg-gradient-to-br from-indigo-50 to-purple-50 rounded-xl p-2.5">
                       <p className="text-xs font-semibold text-gray-600 mb-0.5">Stock</p>
                       <p className={`text-base font-bold ${isLowStock ? 'text-red-600' : 'text-indigo-600'} truncate`}>
                         {item.currentStock} {item.unit}
                       </p>
                     </div>
-                    <div className="bg-gradient-to-br from-green-50 to-emerald-50 rounded-xl p-2.5">
-                      <p className="text-xs font-semibold text-gray-600 mb-0.5">Cost</p>
-                      <p className="text-base font-bold text-green-600 truncate">₹{formatNumber(item.currentCost)}</p>
-                    </div>
-                    <div className="bg-gradient-to-br from-blue-50 to-cyan-50 rounded-xl p-2.5">
-                      <p className="text-xs font-semibold text-gray-600 mb-0.5">Value</p>
-                      <p className="text-base font-bold text-blue-600 truncate">₹{formatNumber(totalValue)}</p>
-                    </div>
+                    {!isStaff && (
+                      <>
+                        <div className="bg-gradient-to-br from-green-50 to-emerald-50 rounded-xl p-2.5">
+                          <p className="text-xs font-semibold text-gray-600 mb-0.5">Cost</p>
+                          <p className="text-base font-bold text-green-600 truncate">₹{formatNumber(item.currentCost)}</p>
+                        </div>
+                        <div className="bg-gradient-to-br from-blue-50 to-cyan-50 rounded-xl p-2.5">
+                          <p className="text-xs font-semibold text-gray-600 mb-0.5">Value</p>
+                          <p className="text-base font-bold text-blue-600 truncate">₹{formatNumber(totalValue)}</p>
+                        </div>
+                      </>
+                    )}
                   </div>
 
                   {/* Actions */}
