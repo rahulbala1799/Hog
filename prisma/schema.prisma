@@ -33,15 +33,6 @@ enum SessionTime {
   SESSION_2  // 9:00 PM - 10:00 PM
 }
 
-enum ExpenseCategory {
-  ART_SUPPLIES
-  RENT
-  MARKETING
-  UTILITIES
-  STAFF
-  EQUIPMENT
-  OTHER
-}
 
 enum Currency {
   INR
@@ -109,20 +100,33 @@ model Booking {
   @@map("bookings")
 }
 
+model ExpenseCategory {
+  id        String    @id @default(uuid())
+  name      String    @unique
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  expenses  Expense[]
+
+  @@map("expense_categories")
+}
+
 model Expense {
-  id          String          @id @default(uuid())
-  amount      Float
-  category    ExpenseCategory
+  id          String           @id @default(uuid())
   description String
-  date        DateTime
-  receiptUrl  String?         // URL to uploaded receipt image
-  createdBy   User            @relation(fields: [createdById], references: [id], onDelete: Restrict)
+  amount      Float
+  category    ExpenseCategory  @relation(fields: [categoryId], references: [id], onDelete: Restrict)
+  categoryId  String
+  date        DateTime         @default(now())
+  receiptUrl  String?          // Vercel Blob URL for uploaded receipt
+  notes       String?
+  createdBy   User             @relation(fields: [createdById], references: [id], onDelete: Restrict)
   createdById String
-  createdAt   DateTime        @default(now())
-  updatedAt   DateTime        @updatedAt
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
 
   @@index([date])
-  @@index([category])
+  @@index([categoryId])
+  @@index([createdById])
   @@map("expenses")
 }
 
