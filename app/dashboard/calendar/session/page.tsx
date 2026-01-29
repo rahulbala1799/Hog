@@ -41,6 +41,25 @@ function SessionDetailContent() {
   const [editBooking, setEditBooking] = useState<Booking | null>(null)
   const [showAddBookingModal, setShowAddBookingModal] = useState(false)
   const [ticketBookingId, setTicketBookingId] = useState<string | null>(null)
+  const [userRole, setUserRole] = useState<string>('STAFF')
+
+  // Fetch user role
+  useEffect(() => {
+    const fetchUser = async () => {
+      try {
+        const response = await fetch('/api/auth/me')
+        if (response.ok) {
+          const data = await response.json()
+          setUserRole(data.user.role)
+        }
+      } catch (error) {
+        console.error('Failed to fetch user:', error)
+      }
+    }
+    fetchUser()
+  }, [])
+
+  const isStaff = userRole === 'STAFF'
 
   const fetchSessionData = async () => {
     setLoading(true)
@@ -416,7 +435,7 @@ function SessionDetailContent() {
                         </div>
 
                         {/* Details Grid */}
-                        <div className="grid grid-cols-2 gap-3 pt-3 border-t border-gray-100">
+                        <div className={`grid gap-3 pt-3 border-t border-gray-100 ${isStaff ? 'grid-cols-1' : 'grid-cols-2'}`}>
                           <div className="flex items-center gap-2">
                             <div className="w-10 h-10 bg-purple-100 rounded-xl flex items-center justify-center">
                               <svg className="w-5 h-5 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -429,19 +448,29 @@ function SessionDetailContent() {
                             </div>
                           </div>
 
-                          {booking.totalAmountPaid ? (
-                            <div className="text-right">
-                              <p className="text-xs text-gray-500 font-medium">Amount</p>
-                              <p className="text-lg font-bold bg-gradient-to-r from-green-600 to-emerald-600 bg-clip-text text-transparent">
-                                ₹{booking.totalAmountPaid > 999 ? `${(booking.totalAmountPaid / 1000).toFixed(1)}k` : booking.totalAmountPaid.toFixed(0)}
-                              </p>
-                              {booking.numberOfPeople > 1 && (
-                                <p className="text-xs text-gray-500">
-                                  ₹{(booking.totalAmountPaid / booking.numberOfPeople).toFixed(0)}/person
-                                </p>
+                          {!isStaff && (
+                            <>
+                              {booking.totalAmountPaid ? (
+                                <div className="text-right">
+                                  <p className="text-xs text-gray-500 font-medium">Amount</p>
+                                  <p className="text-lg font-bold bg-gradient-to-r from-green-600 to-emerald-600 bg-clip-text text-transparent">
+                                    ₹{booking.totalAmountPaid > 999 ? `${(booking.totalAmountPaid / 1000).toFixed(1)}k` : booking.totalAmountPaid.toFixed(0)}
+                                  </p>
+                                  {booking.numberOfPeople > 1 && (
+                                    <p className="text-xs text-gray-500">
+                                      ₹{(booking.totalAmountPaid / booking.numberOfPeople).toFixed(0)}/person
+                                    </p>
+                                  )}
+                                </div>
+                              ) : (
+                                <div className="text-right">
+                                  <p className="text-xs text-gray-500 font-medium">Booked</p>
+                                  <p className="text-sm font-semibold text-gray-900">{formatCreatedDate(booking.createdAt)}</p>
+                                </div>
                               )}
-                            </div>
-                          ) : (
+                            </>
+                          )}
+                          {isStaff && (
                             <div className="text-right">
                               <p className="text-xs text-gray-500 font-medium">Booked</p>
                               <p className="text-sm font-semibold text-gray-900">{formatCreatedDate(booking.createdAt)}</p>
