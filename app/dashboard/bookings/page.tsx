@@ -2,7 +2,7 @@
 
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { BookingStatus, SessionTime } from '@prisma/client'
 import BookingModal from '../calendar/components/BookingModal'
 import TicketModal from '@/app/components/TicketModal'
@@ -21,31 +21,61 @@ interface Booking {
   createdAt: string
 }
 
+interface PaginationInfo {
+  page: number
+  pageSize: number
+  totalCount: number
+  totalPages: number
+  hasNextPage: boolean
+  hasPreviousPage: boolean
+}
+
 export default function BookingsPage() {
   const router = useRouter()
   const [bookings, setBookings] = useState<Booking[]>([])
   const [loading, setLoading] = useState(true)
   const [filter, setFilter] = useState<string>('All')
+  const [search, setSearch] = useState<string>('')
+  const [page, setPage] = useState<number>(1)
+  const [pageSize, setPageSize] = useState<number>(30)
+  const [pagination, setPagination] = useState<PaginationInfo | null>(null)
   const [showBookingModal, setShowBookingModal] = useState(false)
   const [ticketBookingId, setTicketBookingId] = useState<string | null>(null)
+  const searchTimeoutRef = useRef<NodeJS.Timeout | null>(null)
+  const [debouncedSearch, setDebouncedSearch] = useState<string>('')
 
   useEffect(() => {
-    fetchBookings()
+    // Reset to page 1 when filter, debouncedSearch, or pageSize changes
+    setPage(1)
+    fetchBookings(1)
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [filter])
+  }, [filter, debouncedSearch, pageSize])
 
-  const fetchBookings = async () => {
+  useEffect(() => {
+    // Fetch when page changes
+    fetchBookings(page)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [page])
+
+  const fetchBookings = async (currentPage: number = page) => {
     setLoading(true)
     try {
-      let url = '/api/bookings'
+      const params = new URLSearchParams()
       if (filter !== 'All') {
-        url += `?status=${filter.toUpperCase()}`
+        params.append('status', filter.toUpperCase())
       }
+      if (debouncedSearch.trim()) {
+        params.append('search', debouncedSearch.trim())
+      }
+      params.append('page', currentPage.toString())
+      params.append('pageSize', pageSize.toString())
       
+      const url = `/api/bookings?${params.toString()}`
       const response = await fetch(url)
       if (response.ok) {
         const data = await response.json()
         setBookings(data.bookings || [])
+        setPagination(data.pagination || null)
       }
     } catch (err) {
       console.error('Failed to fetch bookings:', err)
@@ -53,6 +83,29 @@ export default function BookingsPage() {
       setLoading(false)
     }
   }
+
+  const handleSearchChange = (value: string) => {
+    setSearch(value)
+    
+    // Clear existing timeout
+    if (searchTimeoutRef.current) {
+      clearTimeout(searchTimeoutRef.current)
+    }
+    
+    // Set new timeout for debounce (500ms)
+    searchTimeoutRef.current = setTimeout(() => {
+      setDebouncedSearch(value)
+    }, 500)
+  }
+
+  // Cleanup timeout on unmount
+  useEffect(() => {
+    return () => {
+      if (searchTimeoutRef.current) {
+        clearTimeout(searchTimeoutRef.current)
+      }
+    }
+  }, [])
 
   const getStatusClass = (status: BookingStatus) => {
     switch (status) {
@@ -83,10 +136,6 @@ export default function BookingsPage() {
   const getSessionTimeLabel = (sessionTime: SessionTime) => {
     return sessionTime === SessionTime.SESSION_1 ? '7:00 PM - 8:00 PM' : '9:00 PM - 10:00 PM'
   }
-
-  const filteredBookings = filter === 'All' 
-    ? bookings 
-    : bookings.filter(b => b.status === filter.toUpperCase())
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-cyan-50 to-purple-50">
@@ -124,14 +173,14 @@ export default function BookingsPage() {
           {/* Quick Stats */}
           <div className="grid grid-cols-2 gap-3">
             <div className="bg-white/20 backdrop-blur-md rounded-2xl p-3 border border-white/30">
-              <div className="text-2xl font-bold text-white">{filteredBookings.length}</div>
+              <div className="text-2xl font-bold text-white">{pagination?.totalCount || bookings.length}</div>
               <div className="text-xs text-white/90 font-medium mt-0.5">{filter === 'All' ? 'Total' : filter} Bookings</div>
             </div>
             <div className="bg-white/20 backdrop-blur-md rounded-2xl p-3 border border-white/30">
               <div className="text-2xl font-bold text-white">
-                {filteredBookings.reduce((sum, b) => sum + b.numberOfPeople, 0)}
+                {bookings.reduce((sum, b) => sum + b.numberOfPeople, 0)}
               </div>
-              <div className="text-xs text-white/90 font-medium mt-0.5">Total People</div>
+              <div className="text-xs text-white/90 font-medium mt-0.5">People (Current Page)</div>
             </div>
           </div>
         </div>
@@ -177,21 +226,85 @@ export default function BookingsPage() {
           </div>
         </div>
 
-        {/* Filter Tabs */}
-        <div className="flex gap-2 mb-6 overflow-x-auto pb-2 scrollbar-hide">
-          {['All', 'Pending', 'Confirmed', 'Completed', 'Cancelled'].map((filterOption) => (
-            <button
-              key={filterOption}
-              onClick={() => setFilter(filterOption)}
-              className={`px-5 py-2.5 rounded-2xl text-sm font-semibold whitespace-nowrap transition-all duration-300 ${
-                filter === filterOption
-                  ? 'bg-gradient-to-r from-blue-600 to-cyan-600 text-white shadow-lg scale-105'
-                  : 'bg-white text-gray-700 border-2 border-gray-200 hover:border-blue-300 hover:shadow-md'
-              }`}
+        {/* Search Bar */}
+        <div className="mb-4">
+          <div className="relative">
+            <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+              <svg
+                className="h-5 w-5 text-gray-400"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+                />
+              </svg>
+            </div>
+            <input
+              type="text"
+              placeholder="Search by name, email, phone, or issue number..."
+              value={search}
+              onChange={(e) => handleSearchChange(e.target.value)}
+              className="w-full pl-12 pr-4 py-3 bg-white rounded-2xl border-2 border-gray-200 focus:border-blue-500 focus:outline-none text-gray-900 placeholder-gray-400 shadow-sm"
+            />
+            {search && (
+              <button
+                onClick={() => handleSearchChange('')}
+                className="absolute inset-y-0 right-0 pr-4 flex items-center"
+              >
+                <svg
+                  className="h-5 w-5 text-gray-400 hover:text-gray-600"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M6 18L18 6M6 6l12 12"
+                  />
+                </svg>
+              </button>
+            )}
+          </div>
+        </div>
+
+        {/* Filter Tabs and Page Size Selector */}
+        <div className="flex flex-col sm:flex-row gap-4 mb-6">
+          <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide flex-1">
+            {['All', 'Pending', 'Confirmed', 'Completed', 'Cancelled'].map((filterOption) => (
+              <button
+                key={filterOption}
+                onClick={() => setFilter(filterOption)}
+                className={`px-5 py-2.5 rounded-2xl text-sm font-semibold whitespace-nowrap transition-all duration-300 ${
+                  filter === filterOption
+                    ? 'bg-gradient-to-r from-blue-600 to-cyan-600 text-white shadow-lg scale-105'
+                    : 'bg-white text-gray-700 border-2 border-gray-200 hover:border-blue-300 hover:shadow-md'
+                }`}
+              >
+                {filterOption}
+              </button>
+            ))}
+          </div>
+          
+          {/* Page Size Selector */}
+          <div className="flex items-center gap-2 bg-white rounded-2xl px-4 py-2.5 border-2 border-gray-200">
+            <span className="text-sm font-medium text-gray-700 whitespace-nowrap">Per page:</span>
+            <select
+              value={pageSize}
+              onChange={(e) => setPageSize(Number(e.target.value))}
+              className="bg-transparent border-none outline-none text-sm font-semibold text-gray-900 cursor-pointer"
             >
-              {filterOption}
-            </button>
-          ))}
+              <option value={10}>10</option>
+              <option value={30}>30</option>
+              <option value={100}>100</option>
+            </select>
+          </div>
         </div>
 
         {/* Bookings List */}
@@ -203,23 +316,26 @@ export default function BookingsPage() {
             </div>
             <p className="mt-6 text-gray-600 font-medium">Loading bookings...</p>
           </div>
-        ) : filteredBookings.length === 0 ? (
+        ) : bookings.length === 0 ? (
           <div className="bg-white rounded-3xl p-12 text-center shadow-lg border border-gray-100">
             <div className="w-20 h-20 bg-gradient-to-br from-blue-100 to-cyan-100 rounded-3xl flex items-center justify-center mx-auto mb-4">
               <span className="text-5xl">📅</span>
             </div>
             <h3 className="text-xl font-bold text-gray-900 mb-2">
-              No bookings {filter !== 'All' ? `(${filter})` : 'yet'}
+              No bookings {filter !== 'All' ? `(${filter})` : search ? 'found' : 'yet'}
             </h3>
             <p className="text-sm text-gray-600 mb-6">
-              {filter === 'All' 
-                ? 'Start by adding your first booking'
-                : `No ${filter.toLowerCase()} bookings found`}
+              {search 
+                ? `No bookings found matching "${search}"`
+                : filter === 'All' 
+                  ? 'Start by adding your first booking'
+                  : `No ${filter.toLowerCase()} bookings found`}
             </p>
           </div>
         ) : (
-          <div className="space-y-4">
-            {filteredBookings.map((booking, index) => (
+          <>
+            <div className="space-y-4 mb-6">
+              {bookings.map((booking, index) => (
               <div
                 key={booking.id}
                 onClick={() => router.push(`/dashboard/calendar/session?date=${booking.sessionDate.split('T')[0]}&session=${booking.sessionTime}`)}
@@ -329,8 +445,81 @@ export default function BookingsPage() {
                   </svg>
                 </div>
               </div>
-            ))}
-          </div>
+              ))}
+            </div>
+
+            {/* Pagination Controls */}
+            {pagination && pagination.totalPages > 1 && (
+              <div className="bg-white rounded-3xl p-4 shadow-lg border border-gray-100">
+                <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+                  <div className="text-sm text-gray-600">
+                    Showing <span className="font-semibold text-gray-900">
+                      {((pagination.page - 1) * pagination.pageSize) + 1}
+                    </span> to{' '}
+                    <span className="font-semibold text-gray-900">
+                      {Math.min(pagination.page * pagination.pageSize, pagination.totalCount)}
+                    </span> of{' '}
+                    <span className="font-semibold text-gray-900">{pagination.totalCount}</span> bookings
+                  </div>
+                  
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={() => setPage(page - 1)}
+                      disabled={!pagination.hasPreviousPage}
+                      className={`px-4 py-2 rounded-xl text-sm font-semibold transition-all ${
+                        pagination.hasPreviousPage
+                          ? 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                          : 'bg-gray-50 text-gray-400 cursor-not-allowed'
+                      }`}
+                    >
+                      Previous
+                    </button>
+                    
+                    <div className="flex items-center gap-1">
+                      {Array.from({ length: Math.min(5, pagination.totalPages) }, (_, i) => {
+                        let pageNum: number
+                        if (pagination.totalPages <= 5) {
+                          pageNum = i + 1
+                        } else if (pagination.page <= 3) {
+                          pageNum = i + 1
+                        } else if (pagination.page >= pagination.totalPages - 2) {
+                          pageNum = pagination.totalPages - 4 + i
+                        } else {
+                          pageNum = pagination.page - 2 + i
+                        }
+                        
+                        return (
+                          <button
+                            key={pageNum}
+                            onClick={() => setPage(pageNum)}
+                            className={`w-10 h-10 rounded-xl text-sm font-semibold transition-all ${
+                              pageNum === pagination.page
+                                ? 'bg-gradient-to-r from-blue-600 to-cyan-600 text-white shadow-lg'
+                                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                            }`}
+                          >
+                            {pageNum}
+                          </button>
+                        )
+                      })}
+                    </div>
+                    
+                    <button
+                      onClick={() => setPage(page + 1)}
+                      disabled={!pagination.hasNextPage}
+                      className={`px-4 py-2 rounded-xl text-sm font-semibold transition-all ${
+                        pagination.hasNextPage
+                          ? 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                          : 'bg-gray-50 text-gray-400 cursor-not-allowed'
+                      }`}
+                    >
+                      Next
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
+          </>
         )}
       </main>
 

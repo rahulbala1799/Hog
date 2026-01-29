@@ -18,6 +18,9 @@ export async function GET(request: Request) {
     const endDate = searchParams.get('endDate')
     const sessionTime = searchParams.get('sessionTime') // SESSION_1 or SESSION_2
     const status = searchParams.get('status')
+    const search = searchParams.get('search') // Search query
+    const page = parseInt(searchParams.get('page') || '1', 10)
+    const pageSize = parseInt(searchParams.get('pageSize') || '30', 10)
 
     const where: any = {}
 
@@ -51,6 +54,23 @@ export async function GET(request: Request) {
       where.status = status
     }
 
+    // Search functionality - search in name, email, phone, and issue number
+    if (search && search.trim()) {
+      where.OR = [
+        { studentName: { contains: search.trim(), mode: 'insensitive' } },
+        { studentEmail: { contains: search.trim(), mode: 'insensitive' } },
+        { studentPhone: { contains: search.trim(), mode: 'insensitive' } },
+        { issueNumber: { contains: search.trim(), mode: 'insensitive' } },
+      ]
+    }
+
+    // Get total count for pagination
+    const totalCount = await prisma.booking.count({ where })
+
+    // Calculate pagination
+    const skip = (page - 1) * pageSize
+    const totalPages = Math.ceil(totalCount / pageSize)
+
     const bookings = await prisma.booking.findMany({
       where,
       include: {
@@ -63,13 +83,25 @@ export async function GET(request: Request) {
         },
       },
       orderBy: [
-        { sessionDate: 'asc' },
+        { sessionDate: 'desc' },
         { sessionTime: 'asc' },
-        { createdAt: 'asc' },
+        { createdAt: 'desc' },
       ],
+      skip,
+      take: pageSize,
     })
 
-    return NextResponse.json({ bookings })
+    return NextResponse.json({ 
+      bookings,
+      pagination: {
+        page,
+        pageSize,
+        totalCount,
+        totalPages,
+        hasNextPage: page < totalPages,
+        hasPreviousPage: page > 1,
+      }
+    })
   } catch (error: any) {
     console.error('Error fetching bookings:', error)
     
