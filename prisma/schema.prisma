@@ -94,6 +94,8 @@ model Booking {
   createdById    String
   createdAt      DateTime      @default(now())
   updatedAt      DateTime      @updatedAt
+  
+  inventoryLogs  InventoryLog[] // Track inventory consumed by this booking
 
   @@index([sessionDate])
   @@index([sessionDate, sessionTime])
@@ -116,10 +118,10 @@ model InventoryItem {
   id              String                 @id @default(uuid())
   name            String
   description     String?
-  currentStock    Int
+  currentStock    Float                  // Changed to Float for fractional units (e.g., 42ml)
   currentCost     Float                  // Current cost per unit
   reorderLevel    Int?                   // Minimum stock level before reordering
-  unit            String                 @default("unit") // e.g., "piece", "kg", "liter"
+  unit            String                 @default("unit") // e.g., "piece", "kg", "liter", "ml"
   createdBy       User                   @relation("InventoryCreatedBy", fields: [createdById], references: [id], onDelete: Restrict)
   createdById     String
   createdAt       DateTime               @default(now())
@@ -127,6 +129,7 @@ model InventoryItem {
   
   priceHistory    InventoryPriceHistory[]
   logs            InventoryLog[]
+  costOfSaleItems CostOfSaleItem[]
 
   @@index([name])
   @@map("inventory_items")
@@ -154,14 +157,17 @@ model InventoryLog {
   action      InventoryAction
   oldValue    String?       // JSON string of old values
   newValue    String?       // JSON string of new values
-  quantity    Int?          // For stock adjustments
+  quantity    Float?        // For stock adjustments (changed to Float)
   notes       String?
   performedBy User          @relation("InventoryLogPerformedBy", fields: [performedById], references: [id], onDelete: Restrict)
   performedById String
+  booking     Booking?      @relation(fields: [bookingId], references: [id], onDelete: SetNull)
+  bookingId   String?       // Reference to booking that caused this log
   createdAt   DateTime      @default(now())
 
   @@index([itemId, createdAt])
   @@index([action])
+  @@index([bookingId])
   @@map("inventory_logs")
 }
 
@@ -171,6 +177,19 @@ enum InventoryAction {
   PRICE_CHANGED
   UPDATED
   DELETED
+  AUTO_CONSUMED  // Automatically consumed by booking
+}
+
+model CostOfSaleItem {
+  id                String        @id @default(uuid())
+  item              InventoryItem @relation(fields: [itemId], references: [id], onDelete: Cascade)
+  itemId            String
+  quantityPerPerson Float         // Amount consumed per person in a booking
+  createdAt         DateTime      @default(now())
+  updatedAt         DateTime      @updatedAt
+
+  @@unique([itemId]) // Each inventory item can only be configured once
+  @@map("cost_of_sale_items")
 }
 
 model Expense {

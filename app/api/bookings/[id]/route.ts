@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/db'
 import { getCurrentUser } from '@/lib/auth-helpers'
 import { BookingStatus, SessionTime } from '@prisma/client'
+import { adjustInventoryForBooking, restoreInventoryForBooking } from '@/lib/inventory-service'
 
 export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
@@ -181,6 +182,20 @@ export async function PUT(
       },
     })
 
+    // Adjust inventory if number of people changed
+    if (numberOfPeople !== undefined && numberOfPeople !== existingBooking.numberOfPeople) {
+      try {
+        await adjustInventoryForBooking(
+          booking.id,
+          existingBooking.numberOfPeople,
+          numberOfPeople,
+          currentUser.id
+        )
+      } catch (inventoryError) {
+        console.error('Error adjusting inventory:', inventoryError)
+      }
+    }
+
     return NextResponse.json({ booking })
   } catch (error: any) {
     console.error('Error updating booking:', error)
@@ -225,7 +240,13 @@ export async function DELETE(
       )
     }
 
-    // Delete booking
+    // Restore inventory before deleting
+    try {
+      await restoreInventoryForBooking(booking.id, currentUser.id)
+    } catch (inventoryError) {
+      console.error('Error restoring inventory:', inventoryError)
+    }
+
     await prisma.booking.delete({
       where: { id: params.id },
     })

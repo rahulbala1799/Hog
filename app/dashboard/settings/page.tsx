@@ -31,6 +31,12 @@ export default function SettingsPage() {
       description: 'Add and manage expense categories',
       href: '/dashboard/settings/expense-categories',
     },
+    {
+      title: 'Cost of Sale',
+      icon: '📦',
+      description: 'Configure inventory usage per booking',
+      href: '/dashboard/settings/cost-of-sale',
+    },
   ]
 
   return (

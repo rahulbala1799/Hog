@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/db'
 import { requireAdmin, getCurrentUser } from '@/lib/auth-helpers'
 import { BookingStatus, SessionTime, BookingType } from '@prisma/client'
+import { consumeInventoryForBooking } from '@/lib/inventory-service'
 
 export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
@@ -244,6 +245,14 @@ export async function POST(request: Request) {
         },
       },
     })
+
+    // Automatically consume inventory for this booking
+    try {
+      await consumeInventoryForBooking(booking.id, pax, currentUser.id)
+    } catch (inventoryError) {
+      console.error('Error consuming inventory:', inventoryError)
+      // Don't fail the booking creation, just log the error
+    }
 
     return NextResponse.json({ booking }, { status: 201 })
   } catch (error: any) {
