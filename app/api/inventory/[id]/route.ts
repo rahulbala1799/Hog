@@ -120,7 +120,7 @@ export async function PUT(
 
     // Handle stock change
     if (currentStock !== undefined) {
-      const newStock = parseInt(currentStock)
+      const newStock = parseFloat(currentStock)
       if (newStock !== currentItem.currentStock) {
         updates.currentStock = newStock
         logs.push({

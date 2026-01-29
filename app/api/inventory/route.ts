@@ -70,7 +70,7 @@ export async function POST(request: NextRequest) {
       data: {
         name: name.trim(),
         description: description?.trim() || null,
-        currentStock: parseInt(currentStock),
+        currentStock: parseFloat(currentStock),
         currentCost: parseFloat(currentCost),
         reorderLevel: reorderLevel ? parseInt(reorderLevel) : null,
         unit: unit?.trim() || 'unit',

@@ -144,6 +144,7 @@ export default function InventoryModal({ isOpen, onClose, onSuccess, item }: Inv
               </label>
               <input
                 type="number"
+                step="0.01"
                 value={formData.currentStock}
                 onChange={(e) => setFormData({ ...formData, currentStock: e.target.value })}
                 className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
