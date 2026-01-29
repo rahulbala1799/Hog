@@ -153,18 +153,9 @@ export default function Dashboard() {
     return amount.toFixed(0)
   }
 
-  const sections = [
-    {
-      title: 'Bookings',
-      icon: '📅',
-      description: 'Manage class bookings',
-      href: '/dashboard/bookings',
-      gradient: 'from-blue-500 to-cyan-500',
-      bgGradient: 'from-blue-50 to-cyan-50',
-      iconBg: 'bg-blue-100',
-      count: stats.upcomingBookings,
-      countLabel: 'upcoming'
-    },
+  const isStaff = user?.role === 'STAFF'
+
+  const allSections = [
     {
       title: 'Calendar',
       icon: '🗓️',
@@ -174,16 +165,20 @@ export default function Dashboard() {
       bgGradient: 'from-purple-50 to-pink-50',
       iconBg: 'bg-purple-100',
       count: stats.todayBookings,
-      countLabel: 'today'
+      countLabel: 'today',
+      allowedRoles: ['ADMIN', 'STAFF']
     },
     {
-      title: 'Expenses',
-      icon: '💰',
-      description: 'Track business expenses',
-      href: '/dashboard/expenses',
-      gradient: 'from-orange-500 to-red-500',
-      bgGradient: 'from-orange-50 to-red-50',
-      iconBg: 'bg-orange-100',
+      title: 'Bookings',
+      icon: '📅',
+      description: 'Manage class bookings',
+      href: '/dashboard/bookings',
+      gradient: 'from-blue-500 to-cyan-500',
+      bgGradient: 'from-blue-50 to-cyan-50',
+      iconBg: 'bg-blue-100',
+      count: stats.upcomingBookings,
+      countLabel: 'upcoming',
+      allowedRoles: ['ADMIN', 'STAFF']
     },
     {
       title: 'Inventory',
@@ -193,6 +188,17 @@ export default function Dashboard() {
       gradient: 'from-indigo-500 to-purple-500',
       bgGradient: 'from-indigo-50 to-purple-50',
       iconBg: 'bg-indigo-100',
+      allowedRoles: ['ADMIN', 'STAFF']
+    },
+    {
+      title: 'Expenses',
+      icon: '💰',
+      description: 'Track business expenses',
+      href: '/dashboard/expenses',
+      gradient: 'from-orange-500 to-red-500',
+      bgGradient: 'from-orange-50 to-red-50',
+      iconBg: 'bg-orange-100',
+      allowedRoles: ['ADMIN']
     },
     {
       title: 'Reports',
@@ -202,6 +208,7 @@ export default function Dashboard() {
       gradient: 'from-green-500 to-emerald-500',
       bgGradient: 'from-green-50 to-emerald-50',
       iconBg: 'bg-green-100',
+      allowedRoles: ['ADMIN']
     },
     {
       title: 'Settings',
@@ -211,8 +218,13 @@ export default function Dashboard() {
       gradient: 'from-gray-500 to-slate-500',
       bgGradient: 'from-gray-50 to-slate-50',
       iconBg: 'bg-gray-100',
+      allowedRoles: ['ADMIN']
     },
   ]
+
+  const sections = allSections.filter(section => 
+    section.allowedRoles.includes(user?.role || 'STAFF')
+  )
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-50 via-pink-50 to-orange-50">
@@ -245,7 +257,7 @@ export default function Dashboard() {
           </div>
 
           {/* Stats Cards */}
-          <div className="grid grid-cols-3 gap-3">
+          <div className={`grid gap-3 ${isStaff ? 'grid-cols-2' : 'grid-cols-3'}`}>
             <div className="bg-white/20 backdrop-blur-md rounded-2xl p-4 border border-white/30">
               <div className="text-3xl font-bold text-white">{stats.todayBookings}</div>
               <div className="text-xs text-white/90 font-medium mt-1">Today</div>
@@ -256,11 +268,13 @@ export default function Dashboard() {
               <div className="text-xs text-white/90 font-medium mt-1">This Week</div>
               <div className="text-xs text-white/70">bookings</div>
             </div>
-            <div className="bg-white/20 backdrop-blur-md rounded-2xl p-4 border border-white/30">
-              <div className="text-2xl font-bold text-white truncate">₹{formatRevenue(stats.monthRevenue)}</div>
-              <div className="text-xs text-white/90 font-medium mt-1">Revenue</div>
-              <div className="text-xs text-white/70">this month</div>
-            </div>
+            {!isStaff && (
+              <div className="bg-white/20 backdrop-blur-md rounded-2xl p-4 border border-white/30">
+                <div className="text-2xl font-bold text-white truncate">₹{formatRevenue(stats.monthRevenue)}</div>
+                <div className="text-xs text-white/90 font-medium mt-1">Revenue</div>
+                <div className="text-xs text-white/70">this month</div>
+              </div>
+            )}
           </div>
         </div>
       </header>

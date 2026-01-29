@@ -43,6 +43,25 @@ export default function BookingsPage() {
   const [ticketBookingId, setTicketBookingId] = useState<string | null>(null)
   const searchTimeoutRef = useRef<NodeJS.Timeout | null>(null)
   const [debouncedSearch, setDebouncedSearch] = useState<string>('')
+  const [userRole, setUserRole] = useState<string>('STAFF')
+
+  // Fetch user role
+  useEffect(() => {
+    const fetchUser = async () => {
+      try {
+        const response = await fetch('/api/auth/me')
+        if (response.ok) {
+          const data = await response.json()
+          setUserRole(data.user.role)
+        }
+      } catch (error) {
+        console.error('Failed to fetch user:', error)
+      }
+    }
+    fetchUser()
+  }, [])
+
+  const isStaff = userRole === 'STAFF'
 
   useEffect(() => {
     // Reset to page 1 when filter, debouncedSearch, or pageSize changes
@@ -422,7 +441,7 @@ export default function BookingsPage() {
                       </div>
                     </div>
                     
-                    {booking.totalAmountPaid && (
+                    {!isStaff && booking.totalAmountPaid && (
                       <div className="text-right">
                         <p className="text-xs text-gray-500 font-medium">Amount</p>
                         <p className="text-lg font-bold bg-gradient-to-r from-green-600 to-emerald-600 bg-clip-text text-transparent">

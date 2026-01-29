@@ -45,6 +45,25 @@ export default function BookingModal({
   const [classTimings, setClassTimings] = useState<ClassTiming[]>([])
   const [maxCapacity, setMaxCapacity] = useState(10)
   const [remainingCapacity, setRemainingCapacity] = useState<{ [key: string]: number }>({})
+  const [userRole, setUserRole] = useState<string>('STAFF')
+
+  // Fetch user role
+  useEffect(() => {
+    const fetchUser = async () => {
+      try {
+        const response = await fetch('/api/auth/me')
+        if (response.ok) {
+          const data = await response.json()
+          setUserRole(data.user.role)
+        }
+      } catch (error) {
+        console.error('Failed to fetch user:', error)
+      }
+    }
+    fetchUser()
+  }, [])
+
+  const isStaff = userRole === 'STAFF'
 
   const [formData, setFormData] = useState({
     studentName: '',
@@ -504,28 +523,30 @@ export default function BookingModal({
             </div>
           </div>
 
-          {/* Total Amount Paid */}
-          <div>
-            <label className="block text-xs font-medium text-gray-700 mb-1.5">
-              Total Amount Paid (Optional)
-            </label>
-            <input
-              type="number"
-              step="0.01"
-              min="0"
-              value={formData.totalAmountPaid}
-              onChange={(e) =>
-                setFormData({ ...formData, totalAmountPaid: e.target.value })
-              }
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none transition text-sm"
-              placeholder="0.00"
-            />
-            {totalAmount > 0 && formData.numberOfPeople > 0 && !isNaN(perPersonAmount) && (
-              <p className="text-xs text-gray-600 mt-1.5 text-center">
-                ₹{perPersonAmount.toFixed(2)} per person
-              </p>
-            )}
-          </div>
+          {/* Total Amount Paid - Hidden for Staff */}
+          {!isStaff && (
+            <div>
+              <label className="block text-xs font-medium text-gray-700 mb-1.5">
+                Total Amount Paid (Optional)
+              </label>
+              <input
+                type="number"
+                step="0.01"
+                min="0"
+                value={formData.totalAmountPaid}
+                onChange={(e) =>
+                  setFormData({ ...formData, totalAmountPaid: e.target.value })
+                }
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none transition text-sm"
+                placeholder="0.00"
+              />
+              {totalAmount > 0 && formData.numberOfPeople > 0 && !isNaN(perPersonAmount) && (
+                <p className="text-xs text-gray-600 mt-1.5 text-center">
+                  ₹{perPersonAmount.toFixed(2)} per person
+                </p>
+              )}
+            </div>
+          )}
 
           {/* Submit Button */}
           <div className="flex gap-2 pt-3">
