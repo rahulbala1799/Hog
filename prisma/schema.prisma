@@ -55,8 +55,10 @@ model User {
   sessions  Session[]
   
   // Business relations
-  bookings  Booking[]
-  expenses  Expense[]
+  bookings              Booking[]
+  expenses              Expense[]
+  inventoryItems        InventoryItem[]    @relation("InventoryCreatedBy")
+  inventoryLogs         InventoryLog[]     @relation("InventoryLogPerformedBy")
 
   @@map("users")
 }
@@ -108,6 +110,67 @@ model ExpenseCategory {
   expenses  Expense[]
 
   @@map("expense_categories")
+}
+
+model InventoryItem {
+  id              String                 @id @default(uuid())
+  name            String
+  description     String?
+  currentStock    Int
+  currentCost     Float                  // Current cost per unit
+  reorderLevel    Int?                   // Minimum stock level before reordering
+  unit            String                 @default("unit") // e.g., "piece", "kg", "liter"
+  createdBy       User                   @relation("InventoryCreatedBy", fields: [createdById], references: [id], onDelete: Restrict)
+  createdById     String
+  createdAt       DateTime               @default(now())
+  updatedAt       DateTime               @updatedAt
+  
+  priceHistory    InventoryPriceHistory[]
+  logs            InventoryLog[]
+
+  @@index([name])
+  @@map("inventory_items")
+}
+
+model InventoryPriceHistory {
+  id          String        @id @default(uuid())
+  item        InventoryItem @relation(fields: [itemId], references: [id], onDelete: Cascade)
+  itemId      String
+  oldPrice    Float?        // Null for initial price
+  newPrice    Float
+  effectiveDate DateTime    @default(now()) // When this price becomes effective
+  changedBy   String        // User email/name
+  reason      String?       // Optional reason for price change
+  createdAt   DateTime      @default(now())
+
+  @@index([itemId, effectiveDate])
+  @@map("inventory_price_history")
+}
+
+model InventoryLog {
+  id          String        @id @default(uuid())
+  item        InventoryItem @relation(fields: [itemId], references: [id], onDelete: Cascade)
+  itemId      String
+  action      InventoryAction
+  oldValue    String?       // JSON string of old values
+  newValue    String?       // JSON string of new values
+  quantity    Int?          // For stock adjustments
+  notes       String?
+  performedBy User          @relation("InventoryLogPerformedBy", fields: [performedById], references: [id], onDelete: Restrict)
+  performedById String
+  createdAt   DateTime      @default(now())
+
+  @@index([itemId, createdAt])
+  @@index([action])
+  @@map("inventory_logs")
+}
+
+enum InventoryAction {
+  CREATED
+  STOCK_ADJUSTED
+  PRICE_CHANGED
+  UPDATED
+  DELETED
 }
 
 model Expense {
