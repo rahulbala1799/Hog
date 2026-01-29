@@ -23,6 +23,28 @@ interface ReportData {
   totalInventoryValue: number
   lowStockCount: number
   inventoryItems: number
+  stockReport: { 
+    id: string
+    name: string
+    currentStock: number
+    unit: string
+    currentCost: number
+    value: number
+    reorderLevel: number | null
+    isLowStock: boolean
+  }[]
+  
+  // Cost of Sale
+  totalCostOfSale: number
+  monthCostOfSale: number
+  costOfSaleByItem: {
+    name: string
+    quantityPerPerson: number
+    unit: string
+    totalQuantity: number
+    costPerUnit: number
+    totalCost: number
+  }[]
   
   // Expenses
   totalExpenses: number
@@ -42,17 +64,19 @@ export default function ReportsPage() {
   const fetchReportData = async () => {
     setLoading(true)
     try {
-      const [bookingsRes, inventoryRes, expensesRes, settingsRes] = await Promise.all([
+      const [bookingsRes, inventoryRes, expensesRes, settingsRes, costOfSaleRes] = await Promise.all([
         fetch('/api/bookings'),
         fetch('/api/inventory'),
         fetch('/api/expenses'),
         fetch('/api/settings'),
+        fetch('/api/cost-of-sale'),
       ])
 
       const bookings = bookingsRes.ok ? (await bookingsRes.json()).bookings || [] : []
       const inventory = inventoryRes.ok ? await inventoryRes.json() : []
       const expenses = expensesRes.ok ? await expensesRes.json() : []
       const settings = settingsRes.ok ? await settingsRes.json() : { maxPersonsPerClass: 15 }
+      const costOfSaleItems = costOfSaleRes.ok ? await costOfSaleRes.json() : []
 
       // Calculate date ranges
       const now = new Date()
@@ -129,6 +153,44 @@ export default function ReportsPage() {
       })
       const expensesByCategory = Array.from(categoryMap.values()).sort((a, b) => b.amount - a.amount)
 
+      // Stock Report
+      const stockReport = inventory.map((item: any) => ({
+        id: item.id,
+        name: item.name,
+        currentStock: item.currentStock,
+        unit: item.unit,
+        currentCost: item.currentCost,
+        value: item.currentStock * item.currentCost,
+        reorderLevel: item.reorderLevel,
+        isLowStock: item.reorderLevel ? item.currentStock <= item.reorderLevel : false,
+      })).sort((a: any, b: any) => b.value - a.value)
+
+      // Cost of Sale calculations
+      const totalPax = confirmedBookings.reduce((sum: number, b: any) => sum + (b.numberOfPeople || 0), 0)
+      const monthPax = monthBookings.reduce((sum: number, b: any) => sum + (b.numberOfPeople || 0), 0)
+      
+      const costOfSaleByItem = costOfSaleItems.map((cosItem: any) => {
+        const totalQuantity = cosItem.quantityPerPerson * totalPax
+        const totalCost = totalQuantity * cosItem.item.currentCost
+        return {
+          name: cosItem.item.name,
+          quantityPerPerson: cosItem.quantityPerPerson,
+          unit: cosItem.item.unit,
+          totalQuantity,
+          costPerUnit: cosItem.item.currentCost,
+          totalCost,
+        }
+      })
+      
+      const totalCostOfSale = costOfSaleByItem.reduce((sum: number, item: any) => sum + item.totalCost, 0)
+      
+      const monthCostOfSaleByItem = costOfSaleItems.map((cosItem: any) => {
+        const monthQuantity = cosItem.quantityPerPerson * monthPax
+        const monthCost = monthQuantity * cosItem.item.currentCost
+        return monthCost
+      })
+      const monthCostOfSale = monthCostOfSaleByItem.reduce((sum: number, cost: number) => sum + cost, 0)
+
       setData({
         totalRevenue,
         monthRevenue,
@@ -144,6 +206,10 @@ export default function ReportsPage() {
         totalInventoryValue,
         lowStockCount,
         inventoryItems: inventory.length,
+        stockReport,
+        totalCostOfSale,
+        monthCostOfSale,
+        costOfSaleByItem,
         totalExpenses,
         monthExpenses,
         expensesByCategory,
@@ -354,6 +420,127 @@ export default function ReportsPage() {
               <p className="text-xl font-bold text-red-600">{data.lowStockCount}</p>
             </div>
           </div>
+        </div>
+
+        {/* Stock Report */}
+        <div className="bg-white rounded-3xl p-5 shadow-lg border border-gray-100">
+          <div className="flex items-center gap-3 mb-4">
+            <div className="w-12 h-12 bg-gradient-to-br from-cyan-100 to-blue-100 rounded-2xl flex items-center justify-center">
+              <span className="text-2xl">📊</span>
+            </div>
+            <div>
+              <h2 className="text-lg font-bold text-gray-900">Stock Report</h2>
+              <p className="text-xs text-gray-600">Detailed inventory status</p>
+            </div>
+          </div>
+
+          {data.stockReport.length > 0 ? (
+            <div className="space-y-2">
+              {data.stockReport.map((item) => (
+                <div 
+                  key={item.id} 
+                  className={`rounded-xl p-3 ${
+                    item.isLowStock 
+                      ? 'bg-gradient-to-br from-red-50 to-orange-50 border border-red-200' 
+                      : 'bg-gray-50'
+                  }`}
+                >
+                  <div className="flex justify-between items-start mb-2">
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2">
+                        <p className="font-bold text-gray-900">{item.name}</p>
+                        {item.isLowStock && (
+                          <span className="text-xs px-2 py-0.5 bg-red-500 text-white rounded-full font-semibold">
+                            LOW
+                          </span>
+                        )}
+                      </div>
+                      <p className="text-xs text-gray-600 mt-0.5">
+                        Cost: ₹{item.currentCost.toFixed(2)}/{item.unit}
+                      </p>
+                    </div>
+                    <div className="text-right">
+                      <p className="text-lg font-bold text-indigo-600">
+                        {item.currentStock.toFixed(1)} {item.unit}
+                      </p>
+                      <p className="text-xs text-gray-600">
+                        Value: {formatCurrency(item.value)}
+                      </p>
+                    </div>
+                  </div>
+                  {item.reorderLevel && (
+                    <div className="mt-2 pt-2 border-t border-gray-200">
+                      <p className="text-xs text-gray-600">
+                        Reorder Level: {item.reorderLevel} {item.unit}
+                      </p>
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          ) : (
+            <p className="text-sm text-gray-500 text-center py-4">No inventory items</p>
+          )}
+        </div>
+
+        {/* Cost of Sale Calculator */}
+        <div className="bg-white rounded-3xl p-5 shadow-lg border border-gray-100">
+          <div className="flex items-center gap-3 mb-4">
+            <div className="w-12 h-12 bg-gradient-to-br from-yellow-100 to-orange-100 rounded-2xl flex items-center justify-center">
+              <span className="text-2xl">🧮</span>
+            </div>
+            <div>
+              <h2 className="text-lg font-bold text-gray-900">Cost of Sale</h2>
+              <p className="text-xs text-gray-600">Inventory consumption cost</p>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 gap-3 mb-4">
+            <div className="bg-gradient-to-br from-orange-50 to-yellow-50 rounded-xl p-3">
+              <p className="text-xs font-semibold text-gray-600 mb-1">Total</p>
+              <p className="text-xl font-bold text-orange-600">{formatCurrency(data.totalCostOfSale)}</p>
+            </div>
+            <div className="bg-gradient-to-br from-yellow-50 to-amber-50 rounded-xl p-3">
+              <p className="text-xs font-semibold text-gray-600 mb-1">This Month</p>
+              <p className="text-xl font-bold text-yellow-600">{formatCurrency(data.monthCostOfSale)}</p>
+            </div>
+          </div>
+
+          {data.costOfSaleByItem.length > 0 ? (
+            <div className="space-y-2">
+              <p className="text-sm font-semibold text-gray-700 mb-2">By Inventory Item</p>
+              {data.costOfSaleByItem.map((item, index) => (
+                <div key={index} className="bg-gradient-to-br from-orange-50 to-yellow-50 rounded-xl p-3">
+                  <div className="flex justify-between items-start mb-2">
+                    <div className="flex-1">
+                      <p className="font-bold text-gray-900">{item.name}</p>
+                      <p className="text-xs text-gray-600 mt-0.5">
+                        {item.quantityPerPerson} {item.unit}/person × ₹{item.costPerUnit.toFixed(2)}
+                      </p>
+                    </div>
+                    <div className="text-right">
+                      <p className="text-lg font-bold text-orange-600">
+                        {formatCurrency(item.totalCost)}
+                      </p>
+                      <p className="text-xs text-gray-600">
+                        {item.totalQuantity.toFixed(1)} {item.unit} total
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="bg-yellow-50 rounded-xl p-4 text-center">
+              <p className="text-sm text-gray-600 mb-2">No cost of sale items configured</p>
+              <Link 
+                href="/dashboard/settings/cost-of-sale"
+                className="text-sm text-orange-600 font-semibold hover:text-orange-700"
+              >
+                Configure Cost of Sale →
+              </Link>
+            </div>
+          )}
         </div>
 
         {/* Expenses Section */}
